@@ -23,6 +23,42 @@ function getScoreClass(score) {
   return 'score-bad'
 }
 
+// Embedded mock data for static deployment
+const MOCK_AGENTS = [
+  {
+    address: '4jHbm2DSBxvUEGQojJCn5bePy7ZmZQMAU7WCf7pPf7hW',
+    name: 'Dj',
+    tier: 2,
+    chain: 'solana',
+    services: [{ type: 'MCP' }, { type: 'A2A' }],
+    reviews: 5
+  },
+  {
+    address: 'FloristOneAgent123',
+    name: 'Florist One',
+    tier: 3,
+    chain: 'solana',
+    services: [{ type: 'MCP' }, { type: 'A2A' }, { type: 'HTTP' }],
+    reviews: 12
+  },
+  {
+    address: 'JadeNetAgent456',
+    name: 'Jade Net',
+    tier: 4,
+    chain: 'solana',
+    services: [{ type: 'MCP' }],
+    reviews: 28
+  },
+  {
+    address: '0x1234...',
+    name: 'Ethereum Agent 1',
+    tier: 2,
+    chain: 'ethereum',
+    services: [{ type: 'MCP' }],
+    reviews: 3
+  }
+]
+
 export default function App() {
   const [agents, setAgents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -31,10 +67,15 @@ export default function App() {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
+    // Try API first, fall back to embedded data
     fetch('/api/agents')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject('API not available'))
       .then(data => { setAgents(data); setLoading(false) })
-      .catch(err => { setError(err.message); setLoading(false) })
+      .catch(() => {
+        // Use embedded data for static deployment
+        setAgents(MOCK_AGENTS)
+        setLoading(false)
+      })
   }, [])
 
   const filtered = agents.filter(a => {
