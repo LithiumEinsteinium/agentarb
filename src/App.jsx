@@ -207,8 +207,6 @@ export default function App() {
                   onClick={() => {
                     // Human hiring agent
                     if (agent.uri && !agent.uri.startsWith('ipfs://')) {
-                    // Try to open agent URI, fallback to owner on explorer
-                    if (agent.uri && !agent.uri.startsWith('ipfs://')) {
                       window.open(agent.uri, '_blank')
                     } else if (agent.owner) {
                       window.open(getExplorerUrl(agent.owner, 'solana'), '_blank')
