@@ -50,6 +50,7 @@ export default function App() {
   const [hasMore, setHasMore] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
   const [x402Filter, setX402Filter] = useState('all')
+  const [showPaymentModal, setShowPaymentModal] = useState(null) // agent to hire
 
   const PAGE_SIZE = 50
 
@@ -250,12 +251,8 @@ export default function App() {
                 <button 
                   className="hire-btn"
                   onClick={() => {
-                    // Human hiring agent
-                    if (agent.uri && !agent.uri.startsWith('ipfs://')) {
-                      window.open(agent.uri, '_blank')
-                    } else if (agent.owner) {
-                      window.open(getExplorerUrl(agent.owner, 'solana'), '_blank')
-                    }
+                    // x402 payment flow - open payment modal
+                    setShowPaymentModal(agent)
                   }}
                 >
                   👤 Hire
@@ -313,3 +310,57 @@ export default function App() {
     </div>
   )
 }
+
+      {/* x402 Payment Modal */}
+      {showPaymentModal && (
+        <div className="modal-overlay" onClick={() => setShowPaymentModal(null)}>
+          <div className="modal-content payment-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowPaymentModal(null)}>×</button>
+            
+            <h2>🤝 Hire Agent via x402</h2>
+            
+            <div className="payment-agent-info">
+              <h3>{showPaymentModal.name}</h3>
+              <p className="payment-address">{showPaymentModal.address?.slice(0,12)}...{showPaymentModal.address?.slice(-8)}</p>
+            </div>
+            
+            <div className="payment-details">
+              <div className="payment-row">
+                <span>Service:</span>
+                <span>{showPaymentModal.services?.[0]?.type || 'MCP'}</span>
+              </div>
+              <div className="payment-row">
+                <span>Network:</span>
+                <span>{showPaymentModal.chain}</span>
+              </div>
+              <div className="payment-row">
+                <span>x402 Support:</span>
+                <span className={showPaymentModal.x402Support ? 'supported' : 'unsupported'}>
+                  {showPaymentModal.x402Support ? '✓ Yes' : '✗ No'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="payment-pricing">
+              <h4>Estimated Cost</h4>
+              <div className="price-options">
+                <div className="price-option">
+                  <span>Basic Query</span>
+                  <span className="price">$0.01 USDC</span>
+                </div>
+                <div className="price-option">
+                  <span>Full Access</span>
+                  <span className="price">$0.05 USDC</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="payment-actions">
+              <button className="pay-button" onClick={() => alert('x402 payment integration coming soon!')}>
+                💳 Pay with Wallet
+              </button>
+              <p className="payment-note">Payment via x402 protocol</p>
+            </div>
+          </div>
+        </div>
+      )}
