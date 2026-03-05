@@ -21,11 +21,12 @@ function mapNetwork(networkId) {
     'bsc': 'ethereum',
     'ethereum': 'ethereum',
     'eth-1': 'ethereum',
-    'celo': 'celo',
-    'arbitrum': 'ethereum',
-    'optimism': 'ethereum'
+    // Celo excluded - will be filtered out
   }
-  return mapping[networkId] || 'ethereum'
+  const chain = mapping[networkId] || 'ethereum'
+  // Only return supported chains
+  if (chain === 'celo') return 'ethereum'
+  return chain
 }
 
 function getExplorerUrl(address, networkId) {

@@ -137,7 +137,6 @@ export default function App() {
           <option value="solana">Solana</option>
           <option value="ethereum">Ethereum/BSC</option>
           <option value="base">Base</option>
-          <option value="celo">Celo</option>
         </select>
         
         <select value={tierFilter} onChange={e => setTierFilter(e.target.value)}>
