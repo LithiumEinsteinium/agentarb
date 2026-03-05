@@ -1,8 +1,9 @@
-// 8004 API Service - Uses LiEs platform API proxy to avoid CORS
+// 8004 API Service - Fetches real agents from multiple sources
 
 const LIES_API = 'https://lies-platform.onrender.com/api/agents'
+const SATI_API = 'https://sati.cascade.fyi/api/agents'
 
-// Known bad actor addresses to filter out (phishing/hacks)
+// Known bad actor addresses to filter out
 const BLOCKED_ADDRESSES = new Set([
   '0x1234567890abcdef1234567890abcdef12345678'.toLowerCase(),
 ])
@@ -21,26 +22,23 @@ function mapNetwork(networkId) {
     'bsc': 'ethereum',
     'ethereum': 'ethereum',
     'eth-1': 'ethereum',
-    // Celo excluded - will be filtered out
   }
   const chain = mapping[networkId] || 'ethereum'
-  // Only return supported chains
-  if (chain === 'celo') return 'ethereum'
   return chain
 }
 
-function getExplorerUrl(address, networkId) {
-  const chain = mapNetwork(networkId)
-  if (chain === 'base') {
+function getExplorerUrl(address, chain) {
+  if (chain === 'solana') {
+    return `https://solscan.io/address/${address}`
+  } else if (chain === 'base') {
     return `https://basescan.org/address/${address}`
-  } else if (chain === 'celo') {
-    return `https://celoscan.io/address/${address}`
   } else {
     return `https://etherscan.io/address/${address}`
   }
 }
 
-function parseServices(agent) {
+// Parse EVM services
+function parseEvmServices(agent) {
   const services = []
   const onChain = agent.on_chain_data || {}
   if (onChain.services && Array.isArray(onChain.services)) {
@@ -54,23 +52,19 @@ function parseServices(agent) {
   return services.length > 0 ? services : [{ type: 'MCP' }]
 }
 
-function transformAgent(agent) {
+// Transform EVM agent
+function transformEvmAgent(agent) {
   const networkId = agent.network_id || 'ethereum'
   const chain = mapNetwork(networkId)
   
-  // Better tier calculation
   let tier = 1
-  
-  // Use token_id as a proxy for activity (higher = more recent/active)
   const tokenId = agent.token_id || 0
   
-  // Calculate tier based on multiple factors
-  if (tokenId > 50000) tier = 5  // Very recent
+  if (tokenId > 50000) tier = 5
   else if (tokenId > 30000) tier = 4
   else if (tokenId > 10000) tier = 3
   else if (tokenId > 1000) tier = 2
   
-  // If has skills, bump tier
   if (agent.skills && agent.skills.length > 0) {
     tier = Math.min(tier + 1, 5)
   }
@@ -80,7 +74,7 @@ function transformAgent(agent) {
     name: agent.name || 'Unknown Agent',
     tier: tier,
     chain: chain,
-    services: parseServices(agent),
+    services: parseEvmServices(agent),
     reviews: agent.reputation_count || 0,
     uri: agent.metadata_uri || '',
     network: agent.network_name || networkId,
@@ -90,44 +84,164 @@ function transformAgent(agent) {
   }
 }
 
-// Fetch agents via LiEs platform proxy
-export async function fetchAllAgents(page = 1, limit = 50) {
+// Transform Solana Sati agent
+function transformSatiAgent(agent) {
+  const services = []
+  
+  if (agent.services && Array.isArray(agent.services)) {
+    agent.services.forEach(s => {
+      if (s.name) services.push({ type: s.name.toUpperCase(), endpoint: s.endpoint })
+    })
+  }
+  
+  // Calculate tier based on reputation
+  let tier = 1
+  const rep = agent.reputation || {}
+  const score = rep.summaryValue || 0
+  
+  if (score >= 80) tier = 5
+  else if (score >= 60) tier = 4
+  else if (score >= 40) tier = 3
+  else if (score >= 20) tier = 2
+  
+  return {
+    address: agent.mint,
+    name: agent.name || 'Unknown',
+    tier: tier,
+    chain: 'solana',
+    services: services.length > 0 ? services : [{ type: 'MCP' }],
+    reviews: rep.count || 0,
+    uri: agent.uri || '',
+    owner: agent.owner || '',
+    description: agent.description || '',
+    image: agent.image || '',
+    active: agent.active || true,
+    reputation: score
+  }
+}
+
+// Fetch Solana agents from Sati API
+async function fetchSolanaAgents() {
   try {
-    const response = await fetch(`${LIES_API}?page=${page}&limit=${limit}`)
+    const response = await fetch(`${SATI_API}?network=mainnet&limit=30`)
     
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`)
+      throw new Error(`Sati API error: ${response.status}`)
     }
     
     const data = await response.json()
     
     if (!data.agents) {
-      return getSolanaMockAgents()
+      return []
     }
     
-    const evmAgents = data.agents
-      .filter(a => !isBlockedAddress(a.address))
-      .map(transformAgent)
-    
-    // Add Solana mock agents to first page
-    if (page === 1) {
-      return [...getSolanaMockAgents(), ...evmAgents]
-    }
-    
-    return evmAgents
+    return data.agents
+      .filter(a => !isBlockedAddress(a.mint))
+      .map(transformSatiAgent)
       
   } catch (err) {
-    console.error('Failed to fetch agents:', err.message)
+    console.error('Sati fetch error:', err.message)
+    return []
+  }
+}
+
+// Fetch EVM agents via LiEs proxy
+async function fetchEvmAgents(page = 1, limit = 30) {
+  try {
+    const response = await fetch(`${LIES_API}?page=${page}&limit=${limit}`)
+    
+    if (!response.ok) {
+      throw new Error(`EVM API error: ${response.status}`)
+    }
+    
+    const data = await response.json()
+    
+    if (!data.agents) {
+      return []
+    }
+    
+    return data.agents
+      .filter(a => !isBlockedAddress(a.address))
+      .map(transformEvmAgent)
+      
+  } catch (err) {
+    console.error('EVM fetch error:', err.message)
+    return []
+  }
+}
+
+// Main fetch function
+export async function fetchAllAgents(page = 1, limit = 50) {
+  try {
+    // Fetch from both sources in parallel
+    const [solana, evm] = await Promise.all([
+      fetchSolanaAgents(),
+      fetchEvmAgents(page, limit)
+    ])
+    
+    // Combine: Solana first, then EVM
+    return [...solana, ...evm]
+    
+  } catch (err) {
+    console.error('Fetch error:', err.message)
     return getSolanaMockAgents()
   }
 }
 
 function getSolanaMockAgents() {
-  return MOCK_AGENTS.filter(a => !isBlockedAddress(a.address))
-    .map(a => ({
-      ...a,
-      isMock: true
-    }))
+  const mock = [
+    {
+      address: '4jHbm2DSBxvUEGQojJCn5bePy7ZmZQMAU7WCf7pPf7hW',
+      name: 'Dj',
+      tier: 2,
+      chain: 'solana',
+      services: [{ type: 'MCP' }, { type: 'A2A' }],
+      reviews: 5,
+      uri: 'https://lies-platform.onrender.com/agent.json'
+    },
+    {
+      address: '5ZvVT4YxmB8X9vVzC1M8YwvwgN4X5K2QpL7jR2mN6pX',
+      name: 'Florist One',
+      tier: 3,
+      chain: 'solana',
+      services: [{ type: 'MCP' }, { type: 'A2A' }, { type: 'HTTP' }],
+      reviews: 12
+    },
+    {
+      address: '7AbCdEfGhIjKlMnOpQrStUvWxYz1234567890ABC',
+      name: 'Jade Net',
+      tier: 4,
+      chain: 'solana',
+      services: [{ type: 'MCP' }],
+      reviews: 28
+    },
+    {
+      address: '9XyZ1234567890abcdefABCDEF123456789GHIJK',
+      name: 'Solana Sentinel',
+      tier: 4,
+      chain: 'solana',
+      services: [{ type: 'MCP' }, { type: 'A2A' }, { type: 'HTTP' }],
+      reviews: 45
+    },
+    {
+      address: '3MnOpQrStUvWxYz1234567890ABCDEFGHIJKL',
+      name: 'DeFi Dolphin',
+      tier: 2,
+      chain: 'solana',
+      services: [{ type: 'MCP' }, { type: 'A2A' }],
+      reviews: 7
+    },
+    {
+      address: '8QkLmNoPqRsTuVwXyZ1234567890ABCDEFGHJ',
+      name: 'NFT Navigator',
+      tier: 3,
+      chain: 'solana',
+      services: [{ type: 'MCP' }, { type: 'HTTP' }],
+      reviews: 22
+    }
+  ]
+  
+  return mock.map(a => ({ ...a, isMock: true }))
 }
 
 export async function getAgentCount() {
@@ -136,92 +250,8 @@ export async function getAgentCount() {
     const data = await response.json()
     return data.total || 0
   } catch (err) {
-    console.error('Failed to get count:', err)
     return 0
   }
 }
 
-// Mock data fallback
-export const MOCK_AGENTS = [
-  {
-    address: '4jHbm2DSBxvUEGQojJCn5bePy7ZmZQMAU7WCf7pPf7hW',
-    name: 'Dj',
-    tier: 2,
-    chain: 'solana',
-    services: [{ type: 'MCP' }, { type: 'A2A' }],
-    reviews: 5,
-    uri: 'https://lies-platform.onrender.com/agent.json'
-  },
-  {
-    address: '5ZvVT4YxmB8X9vVzC1M8YwvwgN4X5K2QpL7jR2mN6pX',
-    name: 'Florist One',
-    tier: 3,
-    chain: 'solana',
-    services: [{ type: 'MCP' }, { type: 'A2A' }, { type: 'HTTP' }],
-    reviews: 12
-  },
-  {
-    address: '7AbCdEfGhIjKlMnOpQrStUvWxYz1234567890ABC',
-    name: 'Jade Net',
-    tier: 4,
-    chain: 'solana',
-    services: [{ type: 'MCP' }],
-    reviews: 28
-  },
-  {
-    address: '0xabcdef1234567890abcdef1234567890abcdef12',
-    name: 'Base Agent Alpha',
-    tier: 3,
-    chain: 'base',
-    services: [{ type: 'MCP' }, { type: 'A2A' }],
-    reviews: 8
-  },
-  {
-    address: '9XyZ1234567890abcdefABCDEF123456789GHIJK',
-    name: 'Solana Sentinel',
-    tier: 4,
-    chain: 'solana',
-    services: [{ type: 'MCP' }, { type: 'A2A' }, { type: 'HTTP' }],
-    reviews: 45
-  },
-  {
-    address: '0x9876543210fedcba9876543210fedcba98765432',
-    name: 'Ethereum Edge',
-    tier: 3,
-    chain: 'ethereum',
-    services: [{ type: 'MCP' }],
-    reviews: 15
-  },
-  {
-    address: '3MnOpQrStUvWxYz1234567890ABCDEFGHIJKL',
-    name: 'DeFi Dolphin',
-    tier: 2,
-    chain: 'solana',
-    services: [{ type: 'MCP' }, { type: 'A2A' }],
-    reviews: 7
-  },
-  {
-    address: '0xfedcba9876543210fedcba9876543210fedcba98',
-    name: 'Base Builder',
-    tier: 2,
-    chain: 'base',
-    services: [{ type: 'MCP' }],
-    reviews: 3
-  },
-  {
-    address: '8QkLmNoPqRsTuVwXyZ1234567890ABCDEFGHJ',
-    name: 'NFT Navigator',
-    tier: 3,
-    chain: 'solana',
-    services: [{ type: 'MCP' }, { type: 'HTTP' }],
-    reviews: 22
-  },
-  {
-    address: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
-    name: 'ETH Enforcer',
-    tier: 4,
-    chain: 'ethereum',
-    services: [{ type: 'MCP' }, { type: 'A2A' }, { type: 'HTTP' }],
-    reviews: 31
-  }
-]
+export const MOCK_AGENTS = getSolanaMockAgents()
