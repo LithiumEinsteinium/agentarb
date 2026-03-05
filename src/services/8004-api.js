@@ -2,6 +2,9 @@
 
 const AGENTSCAN_API = 'https://agentscan.info/api/agents'
 
+// CORS proxy for browser requests
+const CORS_PROXY = 'https://corsproxy.io/?'
+
 // Known bad actor addresses to filter out (phishing/hacks)
 const BLOCKED_ADDRESSES = new Set([
   '0x1234567890abcdef1234567890abcdef12345678'.toLowerCase(),
@@ -17,7 +20,7 @@ function mapNetwork(networkId) {
   const mapping = {
     'base': 'base',
     'base-mainnet': 'base',
-    'bsc-1': 'ethereum',  // BSC uses EVM
+    'bsc-1': 'ethereum',
     'bsc': 'ethereum',
     'ethereum': 'ethereum',
     'eth-1': 'ethereum',
@@ -28,7 +31,6 @@ function mapNetwork(networkId) {
   return mapping[networkId] || 'ethereum'
 }
 
-// Map network to explorer URL
 function getExplorerUrl(address, networkId) {
   const chain = mapNetwork(networkId)
   if (chain === 'base') {
@@ -40,39 +42,29 @@ function getExplorerUrl(address, networkId) {
   }
 }
 
-// Parse services from agent metadata
 function parseServices(agent) {
   const services = []
-  
-  // Check on_chain_data for services
   const onChain = agent.on_chain_data || {}
-  if (onChain.services) {
-    if (Array.isArray(onChain.services)) {
-      onChain.services.forEach(s => {
-        if (s.name) services.push({ type: s.name.toUpperCase() })
-      })
-    }
+  if (onChain.services && Array.isArray(onChain.services)) {
+    onChain.services.forEach(s => {
+      if (s.name) services.push({ type: s.name.toUpperCase() })
+    })
   }
-  
-  // Add MCP if metadata_uri exists
   if (agent.metadata_uri) {
     services.push({ type: 'MCP' })
   }
-  
   return services.length > 0 ? services : [{ type: 'MCP' }]
 }
 
-// Transform agentscan agent to our format
 function transformAgent(agent) {
   const networkId = agent.network_id || 'ethereum'
   const chain = mapNetwork(networkId)
   
-  // Calculate tier based on reputation score
   let tier = 1
-  if (agent.reputation_score >= 80) tier = 5  // Platinum
-  else if (agent.reputation_score >= 60) tier = 4  // Gold
-  else if (agent.reputation_score >= 40) tier = 3  // Silver
-  else if (agent.reputation_score >= 20) tier = 2  // Bronze
+  if (agent.reputation_score >= 80) tier = 5
+  else if (agent.reputation_score >= 60) tier = 4
+  else if (agent.reputation_score >= 40) tier = 3
+  else if (agent.reputation_score >= 20) tier = 2
   
   return {
     address: agent.address,
@@ -88,10 +80,18 @@ function transformAgent(agent) {
   }
 }
 
-// Fetch agents from agentscan.info
-export async function fetchAllAgents(page = 1, limit = 20) {
+// Fetch agents with CORS proxy
+export async function fetchAllAgents(page = 1, limit = 30) {
   try {
-    const response = await fetch(`${AGENTSCAN_API}?page=${page}&page_size=${limit}`)
+    // Try direct first
+    let url = `${AGENTSCAN_API}?page=${page}&page_size=${limit}`
+    
+    const response = await fetch(url, {
+      headers: { 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`)
@@ -103,41 +103,39 @@ export async function fetchAllAgents(page = 1, limit = 20) {
       return []
     }
     
-    // Transform and filter agents
     return data.items
       .filter(a => !isBlockedAddress(a.address))
       .map(transformAgent)
       
   } catch (err) {
-    console.error('Failed to fetch from agentscan:', err)
-    return []
-  }
-}
-
-// Fetch agents by chain
-export async function fetchAgentsByChain(chain, page = 1, limit = 20) {
-  try {
-    // Map our chain names to network IDs
-    const networkMap = {
-      'base': 'base',
-      'ethereum': 'bsc-1',
-      'solana': 'solana'  // Not supported by agentscan
+    console.error('Direct fetch failed:', err.message)
+    
+    // Try with CORS proxy
+    try {
+      const proxyUrl = `${CORS_PROXY}${encodeURIComponent(AGENTSCAN_API)}?page=${page}&page_size=${limit}`
+      const response = await fetch(proxyUrl)
+      
+      if (!response.ok) {
+        throw new Error(`Proxy error: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      
+      if (!data.items) {
+        return []
+      }
+      
+      return data.items
+        .filter(a => !isBlockedAddress(a.address))
+        .map(transformAgent)
+        
+    } catch (proxyErr) {
+      console.error('Proxy fetch also failed:', proxyErr.message)
+      throw proxyErr
     }
-    
-    // Since agentscan doesn't support Solana, we'll filter in memory
-    const allAgents = await fetchAllAgents(page, limit)
-    
-    if (chain === 'all') return allAgents
-    
-    return allAgents.filter(a => a.chain === chain)
-    
-  } catch (err) {
-    console.error('Failed to fetch by chain:', err)
-    return []
   }
 }
 
-// Get total agent count
 export async function getAgentCount() {
   try {
     const response = await fetch(`${AGENTSCAN_API}?page=1&page_size=1`)
