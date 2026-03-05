@@ -1,9 +1,6 @@
-// 8004 API Service - Fetches real agents from agentscan.info
+// 8004 API Service - Uses LiEs platform API proxy to avoid CORS
 
-const AGENTSCAN_API = 'https://agentscan.info/api/agents'
-
-// CORS proxy for browser requests
-const CORS_PROXY = 'https://corsproxy.io/?'
+const LIES_API = 'https://lies-platform.onrender.com/api/agents'
 
 // Known bad actor addresses to filter out (phishing/hacks)
 const BLOCKED_ADDRESSES = new Set([
@@ -80,18 +77,10 @@ function transformAgent(agent) {
   }
 }
 
-// Fetch agents with CORS proxy
+// Fetch agents via LiEs platform proxy
 export async function fetchAllAgents(page = 1, limit = 30) {
   try {
-    // Try direct first
-    let url = `${AGENTSCAN_API}?page=${page}&page_size=${limit}`
-    
-    const response = await fetch(url, {
-      headers: { 
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    })
+    const response = await fetch(`${LIES_API}?page=${page}&limit=${limit}`)
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`)
@@ -99,46 +88,23 @@ export async function fetchAllAgents(page = 1, limit = 30) {
     
     const data = await response.json()
     
-    if (!data.items) {
+    if (!data.agents) {
       return []
     }
     
-    return data.items
+    return data.agents
       .filter(a => !isBlockedAddress(a.address))
       .map(transformAgent)
       
   } catch (err) {
-    console.error('Direct fetch failed:', err.message)
-    
-    // Try with CORS proxy
-    try {
-      const proxyUrl = `${CORS_PROXY}${encodeURIComponent(AGENTSCAN_API)}?page=${page}&page_size=${limit}`
-      const response = await fetch(proxyUrl)
-      
-      if (!response.ok) {
-        throw new Error(`Proxy error: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (!data.items) {
-        return []
-      }
-      
-      return data.items
-        .filter(a => !isBlockedAddress(a.address))
-        .map(transformAgent)
-        
-    } catch (proxyErr) {
-      console.error('Proxy fetch also failed:', proxyErr.message)
-      throw proxyErr
-    }
+    console.error('Failed to fetch agents:', err.message)
+    throw err
   }
 }
 
 export async function getAgentCount() {
   try {
-    const response = await fetch(`${AGENTSCAN_API}?page=1&page_size=1`)
+    const response = await fetch(`${LIES_API}?page=1&limit=1`)
     const data = await response.json()
     return data.total || 0
   } catch (err) {
