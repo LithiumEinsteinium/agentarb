@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { fetchAllAgents, MOCK_AGENTS } from './services/8004-api'
 
 function calculateArbitrageScore(agent) {
   let score = (agent.tier || 0) * 20
@@ -34,63 +35,53 @@ function getScoreClass(score) {
   return 'score-bad'
 }
 
-// Embedded mock data for static deployment
-const MOCK_AGENTS = [
-  {
-    address: '4jHbm2DSBxvUEGQojJCn5bePy7ZmZQMAU7WCf7pPf7hW',
-    name: 'Dj',
-    tier: 2,
-    chain: 'solana',
-    services: [{ type: 'MCP' }, { type: 'A2A' }],
-    reviews: 5
-  },
-  {
-    address: 'FloristOneAgent123',
-    name: 'Florist One',
-    tier: 3,
-    chain: 'solana',
-    services: [{ type: 'MCP' }, { type: 'A2A' }, { type: 'HTTP' }],
-    reviews: 12
-  },
-  {
-    address: 'JadeNetAgent456',
-    name: 'Jade Net',
-    tier: 4,
-    chain: 'solana',
-    services: [{ type: 'MCP' }],
-    reviews: 28
-  },
-  {
-    address: '0x1234...',
-    name: 'Ethereum Agent 1',
-    tier: 2,
-    chain: 'ethereum',
-    services: [{ type: 'MCP' }],
-    reviews: 3
-  }
-]
-
 export default function App() {
   const [agents, setAgents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [chainFilter, setChainFilter] = useState('all')
+  const [tierFilter, setTierFilter] = useState('all')
+  const [serviceFilter, setServiceFilter] = useState('all')
   const [search, setSearch] = useState('')
+  const [dataSource, setDataSource] = useState('real')
 
   useEffect(() => {
-    // Try API first, fall back to embedded data
-    fetch('/api/agents')
-      .then(r => r.ok ? r.json() : Promise.reject('API not available'))
-      .then(data => { setAgents(data); setLoading(false) })
-      .catch(() => {
-        // Use embedded data for static deployment
+    loadAgents()
+  }, [dataSource])
+
+  async function loadAgents() {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      if (dataSource === 'real') {
+        // Try to fetch real 8004 data
+        const realAgents = await fetchAllAgents()
+        
+        if (realAgents.length > 0) {
+          setAgents(realAgents)
+        } else {
+          // Fall back to mock data if no real agents found
+          console.log('No real agents found, using mock data')
+          setAgents(MOCK_AGENTS)
+        }
+      } else {
         setAgents(MOCK_AGENTS)
-        setLoading(false)
-      })
-  }, [])
+      }
+    } catch (err) {
+      console.error('Failed to load agents:', err)
+      setError(err.message)
+      // Fall back to mock data on error
+      setAgents(MOCK_AGENTS)
+    }
+    
+    setLoading(false)
+  }
 
   const filtered = agents.filter(a => {
     if (chainFilter !== 'all' && a.chain !== chainFilter) return false
+    if (tierFilter !== 'all' && a.tier !== parseInt(tierFilter)) return false
+    if (serviceFilter !== 'all' && !a.services?.some(s => s.type === serviceFilter)) return false
     if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
@@ -104,6 +95,21 @@ export default function App() {
       <div className="header">
         <h1>Agent Arbitrage</h1>
         <p>Find undervalued AI agents across chains — reputation vs price arbitrage</p>
+      </div>
+
+      <div className="data-source-toggle">
+        <button 
+          className={dataSource === 'real' ? 'active' : ''} 
+          onClick={() => setDataSource('real')}
+        >
+          Real Data
+        </button>
+        <button 
+          className={dataSource === 'mock' ? 'active' : ''} 
+          onClick={() => setDataSource('mock')}
+        >
+          Mock Data
+        </button>
       </div>
 
       <div className="stats">
@@ -126,7 +132,25 @@ export default function App() {
           <option value="all">All Chains</option>
           <option value="solana">Solana</option>
           <option value="ethereum">Ethereum</option>
+          <option value="base">Base</option>
         </select>
+        
+        <select value={tierFilter} onChange={e => setTierFilter(e.target.value)}>
+          <option value="all">All Tiers</option>
+          <option value="5">Platinum</option>
+          <option value="4">Gold</option>
+          <option value="3">Silver</option>
+          <option value="2">Bronze</option>
+          <option value="1">Unrated</option>
+        </select>
+        
+        <select value={serviceFilter} onChange={e => setServiceFilter(e.target.value)}>
+          <option value="all">All Services</option>
+          <option value="MCP">MCP</option>
+          <option value="A2A">A2A</option>
+          <option value="HTTP">HTTP</option>
+        </select>
+        
         <input
           type="text"
           placeholder="Search agents..."
@@ -135,7 +159,7 @@ export default function App() {
         />
       </div>
 
-      {loading && <div className="loading">Loading agents...</div>}
+      {loading && <div className="loading">Loading agents from blockchain...</div>}
       {error && <div className="loading" style={{ color: '#f87171' }}>Error: {error}</div>}
 
       <div className="agent-grid">
@@ -151,7 +175,7 @@ export default function App() {
                   </div>
                   <div className="address">
                     <a href={getExplorerUrl(agent.address, agent.chain)} target="_blank" rel="noopener noreferrer">
-                      {agent.address.slice(0, 6)}...{agent.address.slice(-4)}
+                      {agent.address.slice(0, 8)}...{agent.address.slice(-6)}
                     </a>
                   </div>
                 </div>
@@ -174,6 +198,10 @@ export default function App() {
           )
         })}
       </div>
+      
+      {!loading && filtered.length === 0 && (
+        <div className="loading">No agents found matching your filters</div>
+      )}
     </div>
   )
 }
