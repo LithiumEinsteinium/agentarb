@@ -204,8 +204,9 @@ export default function App() {
               <div className="agent-actions">
                 <button 
                   className="hire-btn"
-                  title="Human: Hire via wallet"
                   onClick={() => {
+                    // Human hiring agent
+                    if (agent.uri && !agent.uri.startsWith('ipfs://')) {
                     // Try to open agent URI, fallback to owner on explorer
                     if (agent.uri && !agent.uri.startsWith('ipfs://')) {
                       window.open(agent.uri, '_blank')
@@ -214,12 +215,11 @@ export default function App() {
                     }
                   }}
                 >
-                  🤝 Hire
+                  👤 Hire
                 </button>
                 {agent.services?.length > 0 && (
                   <button 
                     className="connect-btn"
-                    title="AI Agent: Connect via MCP/A2A"
                     onClick={() => {
                       const service = agent.services.find(s => 
                         s.endpoint && !s.endpoint.includes('github.com')
@@ -235,7 +235,7 @@ export default function App() {
                       }
                     }}
                   >
-                    🔗 Connect
+                    🤖 Connect
                   </button>
                 )}
               </div>
