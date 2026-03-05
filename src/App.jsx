@@ -200,6 +200,26 @@ export default function App() {
                 <div className={`score-value ${getScoreClass(score)}`}>{score}</div>
                 <div className="score-label">Arbitrage Score · {agent.reviews || 0} reviews</div>
               </div>
+              
+              <div className="agent-actions">
+                <button 
+                  className="hire-btn"
+                  onClick={() => window.open(agent.uri || '#', '_blank')}
+                >
+                  🤝 Hire Agent
+                </button>
+                {agent.services?.some(s => s.endpoint) && (
+                  <button 
+                    className="connect-btn"
+                    onClick={() => {
+                      const mcp = agent.services.find(s => s.endpoint)
+                      if (mcp?.endpoint) window.open(mcp.endpoint, '_blank')
+                    }}
+                  >
+                    🔗 Connect
+                  </button>
+                )}
+              </div>
             </div>
           )
         })}
@@ -224,6 +244,7 @@ export default function App() {
             <li>🤖 AI Agent hiring via x402</li>
             <li>📊 Advanced analytics</li>
             <li>🔔 Price drop alerts</li>
+            <li>💸 Referral commissions (10%)</li>
           </ul>
           <p className="premium-note">Built on x402 standard for seamless crypto payments</p>
         </div>

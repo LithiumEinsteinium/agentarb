@@ -110,6 +110,44 @@ body {
   margin-top: 15px;
 }
 
+/* Agent Actions */
+.agent-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.hire-btn, .connect-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hire-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.hire-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.connect-btn {
+  background: #252535;
+  color: #aaa;
+  border: 1px solid #333;
+}
+
+.connect-btn:hover {
+  background: #2a2a3a;
+  color: #fff;
+}
+
 .filters {
   display: flex;
   gap: 15px;
