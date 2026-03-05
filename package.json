@@ -1,7 +1,7 @@
 {
   "name": "agent-arbitrage-platform",
-  "version":.0",
-  "description": "Find undervalued AI agents "1.0 across chains - reputation vs price arbitrage",
+  "version": "1.0.0",
+  "description": "Find undervalued AI agents across chains - reputation vs price arbitrage",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
