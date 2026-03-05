@@ -25,6 +25,10 @@ async function build() {
   
   let html = fs.readFileSync('index.html', 'utf8');
   html = html.replace('/src/main.jsx', '/assets/main.js');
+  // Add CSS link if not present
+  if (!html.includes('main.css')) {
+    html = html.replace('</head>', '<link rel="stylesheet" href="/assets/main.css">\n</head>');
+  }
   fs.writeFileSync('dist/index.html', html);
   
   console.log('Build complete!');
