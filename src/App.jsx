@@ -48,6 +48,8 @@ export default function App() {
   const [totalAgents, setTotalAgents] = useState(0)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [x402Filter, setX402Filter] = useState('all')
 
   const PAGE_SIZE = 50
 
@@ -98,10 +100,16 @@ export default function App() {
       if (chainFilter !== 'all' && chain !== chainFilter) return false
       if (tierFilter !== 'all' && a.tier !== parseInt(tierFilter)) return false
       if (serviceFilter !== 'all' && !a.services?.some(s => s.type === serviceFilter)) return false
+      if (statusFilter !== 'all') {
+        const isActive = a.active !== false
+        if (statusFilter === 'active' && !isActive) return false
+        if (statusFilter === 'inactive' && isActive) return false
+      }
+      if (x402Filter !== 'all' && !a.x402Support) return false
       if (search && !a.name?.toLowerCase().includes(search.toLowerCase())) return false
       return true
     })
-  }, [agents, chainFilter, tierFilter, serviceFilter, search])
+  }, [agents, chainFilter, tierFilter, serviceFilter, statusFilter, x402Filter, search])
 
   const avgScore = filtered.length
     ? Math.round(filtered.reduce((s, a) => s + calculateArbitrageScore(a), 0) / filtered.length)
@@ -155,6 +163,17 @@ export default function App() {
           <option value="MCP">MCP</option>
           <option value="A2A">A2A</option>
           <option value="HTTP">HTTP</option>
+        </select>
+
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <option value="all">All Status</option>
+          <option value="active">Active Only</option>
+          <option value="inactive">Inactive Only</option>
+        </select>
+
+        <select value={x402Filter} onChange={e => setX402Filter(e.target.value)}>
+          <option value="all">All Payments</option>
+          <option value="x402">x402 Only</option>
         </select>
         
         <input
