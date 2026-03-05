@@ -75,10 +75,12 @@ export default function App() {
   const [showPaymentModal, setShowPaymentModal] = useState(null)
   const [payingService, setPayingService] = useState(null)
   const [showServices, setShowServices] = useState(true)
+  const [services, setServices] = useState([])
 
   const PAGE_SIZE = 50
 
   useEffect(() => {
+    fetchServices()
     loadAgents(1)
   }, [])
 
