@@ -101,17 +101,32 @@ export async function fetchAllAgents(page = 1, limit = 50) {
     const data = await response.json()
     
     if (!data.agents) {
-      return []
+      return getSolanaMockAgents()
     }
     
-    return data.agents
+    const evmAgents = data.agents
       .filter(a => !isBlockedAddress(a.address))
       .map(transformAgent)
+    
+    // Add Solana mock agents to first page
+    if (page === 1) {
+      return [...getSolanaMockAgents(), ...evmAgents]
+    }
+    
+    return evmAgents
       
   } catch (err) {
     console.error('Failed to fetch agents:', err.message)
-    throw err
+    return getSolanaMockAgents()
   }
+}
+
+function getSolanaMockAgents() {
+  return MOCK_AGENTS.filter(a => !isBlockedAddress(a.address))
+    .map(a => ({
+      ...a,
+      isMock: true
+    }))
 }
 
 export async function getAgentCount() {
