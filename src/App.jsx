@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { fetchAllAgents, getAgentCount } from './services/8004-api'
 
 function calculateArbitrageScore(agent) {
@@ -92,13 +92,15 @@ export default function App() {
     }
   }
 
-  const filtered = agents.filter(a => {
-    if (chainFilter !== 'all' && a.chain !== chainFilter) return false
-    if (tierFilter !== 'all' && a.tier !== parseInt(tierFilter)) return false
-    if (serviceFilter !== 'all' && !a.services?.some(s => s.type === serviceFilter)) return false
-    if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  const filtered = useMemo(() => {
+    return agents.filter(a => {
+      if (chainFilter !== 'all' && a.chain !== chainFilter) return false
+      if (tierFilter !== 'all' && a.tier !== parseInt(tierFilter)) return false
+      if (serviceFilter !== 'all' && !a.services?.some(s => s.type === serviceFilter)) return false
+      if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
+  }, [agents, chainFilter, tierFilter, serviceFilter, search])
 
   const avgScore = filtered.length
     ? Math.round(filtered.reduce((s, a) => s + calculateArbitrageScore(a), 0) / filtered.length)
