@@ -4,10 +4,6 @@
   "description": "Find undervalued AI agents across chains - reputation vs price arbitrage",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "node build.js --serve",
-    "dev:server": "node server/index.js",
-    "build": "node scripts/build.mjs",
     "start": "node server/index.js"
   },
   "dependencies": {
