@@ -204,6 +204,7 @@ export default function App() {
               <div className="agent-actions">
                 <button 
                   className="hire-btn"
+                  title="Human: Hire via wallet"
                   onClick={() => {
                     // Try to open agent URI, fallback to owner on explorer
                     if (agent.uri && !agent.uri.startsWith('ipfs://')) {
@@ -218,6 +219,7 @@ export default function App() {
                 {agent.services?.length > 0 && (
                   <button 
                     className="connect-btn"
+                    title="AI Agent: Connect via MCP/A2A"
                     onClick={() => {
                       const service = agent.services.find(s => 
                         s.endpoint && !s.endpoint.includes('github.com')
@@ -257,10 +259,9 @@ export default function App() {
           <h3>🔒 x402 Payments</h3>
           <p>Premium features coming soon:</p>
           <ul>
-            <li>💰 Pay-per-search ($0.01-0.05)</li>
-            <li>🤖 AI Agent hiring via x402</li>
-            <li>📊 Advanced analytics</li>
-            <li>🔔 Price drop alerts</li>
+            <li>👤 <strong>Hire</strong> - Humans pay to hire agents</li>
+            <li>🤖 <strong>Connect</strong> - Agents pay to connect (MCP/A2A)</li>
+            <li>💰 Pay-per-use ($0.01-0.05)</li>
             <li>💸 Referral commissions (10%)</li>
           </ul>
           <p className="premium-note">Built on x402 standard for seamless crypto payments</p>
