@@ -1,14 +1,21 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 3000
 
 app.use(cors())
 app.use(express.json())
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, '../dist')))
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -67,6 +74,11 @@ app.post('/api/pay', async (req, res) => {
   
   // TODO: Implement x402 payment
   res.json({ status: 'pending', message: 'Payment integration coming soon' })
+})
+
+// SPA fallback - serve index.html for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'))
 })
 
 app.listen(PORT, () => {
