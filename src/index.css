@@ -156,6 +156,54 @@ body {
   color: #667eea;
 }
 
+.agent-description {
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.agent-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.skill-tag {
+  background: #1a1a25;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  color: #aaa;
+}
+
+.skill-more {
+  font-size: 0.65rem;
+  color: #666;
+  padding: 2px 4px;
+}
+
+.agent-status {
+  margin-top: 8px;
+}
+
+.status-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.status-badge.active {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.status-badge.inactive {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
 .hire-btn, .connect-btn {
   flex: 1;
   padding: 8px 12px;

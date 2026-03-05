@@ -206,6 +206,27 @@ export default function App() {
                 <span className="info-value">{agent.owner ? agent.owner.slice(0,8)+'...'+agent.owner.slice(-6) : 'N/A'}</span>
               </div>
               
+              {agent.description && (
+                <div className="agent-description">
+                  {agent.description.slice(0, 80)}{agent.description.length > 80 ? '...' : ''}
+                </div>
+              )}
+              
+              {agent.skills && agent.skills.length > 0 && (
+                <div className="agent-skills">
+                  {agent.skills.slice(0, 2).map((skill, i) => (
+                    <span key={i} className="skill-tag">{skill.split('/').pop()}</span>
+                  ))}
+                  {agent.skills.length > 2 && <span className="skill-more">+{agent.skills.length - 2}</span>}
+                </div>
+              )}
+              
+              <div className="agent-status">
+                <span className={`status-badge ${agent.active ? 'active' : 'inactive'}`}>
+                  {agent.active ? '● Active' : '○ Inactive'}
+                </span>
+              </div>
+              
               <div className="agent-actions">
                 <button 
                   className="hire-btn"
