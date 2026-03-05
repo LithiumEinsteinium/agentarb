@@ -127,7 +127,95 @@ export default function App() {
         <p className="x402-notice">🔒 x402 Payments Ready — Coming Soon</p>
       </div>
 
-      <div className="stats">
+      <div className="services-section">
+        <h2>🛒 Agent Services</h2>
+        <p className="services-intro">Buy AI services directly - we proxy the requests via x402</p>
+        
+        <div className="services-grid">
+          <div className="service-card">
+            <h3>🖼️ Nano Banana</h3>
+            <p className="service-desc">Image generation via AI</p>
+            <div className="service-price">
+              <span className="price">$0.06</span>
+              <span className="note">(we pay $0.05)</span>
+            </div>
+            <button className="buy-button" onClick={() => alert('Service purchase coming soon!')}>Buy Now</button>
+          </div>
+          
+          <div className="service-card">
+            <h3>🔍 Exa Search</h3>
+            <p className="service-desc">AI-powered web search</p>
+            <div className="service-price">
+              <span className="price">$0.03</span>
+              <span className="note">(we pay $0.02)</span>
+            </div>
+            <button className="buy-button" onClick={() => alert('Service purchase coming soon!')}>Buy Now</button>
+          </div>
+          
+          <div className="service-card">
+            <h3>📊 Data Analysis</h3>
+            <p className="service-desc">Crypto market data queries</p>
+            <div className="service-price">
+              <span className="price">$0.04</span>
+              <span className="note">(we pay $0.03)</span>
+            </div>
+            <button className="buy-button" onClick={() => alert('Service purchase coming soon!')}>Buy Now</button>
+          </div>
+          
+          <div className="service-card">
+            <h3>💬 NLP Chat</h3>
+            <p className="service-desc">AI conversation agent</p>
+            <div className="service-price">
+              <span className="price">$0.02</span>
+              <span className="note">(we pay $0.015)</span>
+            </div>
+            <button className="buy-button" onClick={() => alert('Service purchase coming soon!')}>Buy Now</button>
+          </div>
+        </div>
+        
+        <p className="services-note">🔒 Payments via x402 protocol - automatic and secure</p>
+      </div>
+
+
+      {/* x402 Payment Modal */}
+      {showPaymentModal && (
+        <div className="modal-overlay" onClick={() => setShowPaymentModal(null)}>
+          <div className="modal-content payment-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowPaymentModal(null)}>×</button>
+            <h2>🤝 Hire Agent via x402</h2>
+            <div className="payment-agent-info">
+              <h3>{showPaymentModal.name}</h3>
+              <p className="payment-address">{showPaymentModal.address?.slice(0,12)}...{showPaymentModal.address?.slice(-8)}</p>
+            </div>
+            <div className="payment-details">
+              <div className="payment-row"><span>Service:</span><span>{showPaymentModal.services?.[0]?.type || 'MCP'}</span></div>
+              <div className="payment-row"><span>Network:</span><span>{showPaymentModal.chain || 'N/A'}</span></div>
+              <div className="payment-row"><span>x402 Support:</span><span className={showPaymentModal.x402Support ? 'supported' : 'unsupported'}>{showPaymentModal.x402Support ? '✓ Yes' : '✗ No'}</span></div>
+            </div>
+            <div className="payment-pricing">
+              <h4>Estimated Cost</h4>
+              <div className="price-options">
+                <div className="price-option"><span>Basic Query</span><span className="price">$0.01 USDC</span></div>
+                <div className="price-option"><span>Full Access</span><span className="price">$0.05 USDC</span></div>
+              </div>
+            </div>
+            <div className="payment-actions">
+              <button className="pay-button" onClick={() => alert('x402 payment integration coming soon!')}>💳 Pay with Wallet</button>
+              <p className="payment-note">Payment via x402 protocol</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      </div>
+    </div>
+  )
+}
+</div>
+      </div>
+      </div>
+
+<div className="stats">
         <div className="stat-card">
           <div className="value">{filtered.length}</div>
           <div className="label">Showing</div>
