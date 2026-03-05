@@ -146,7 +146,7 @@ async function fetchSolanaAgents() {
 }
 
 // Fetch EVM agents via LiEs proxy
-async function fetchEvmAgents(page = 1, limit = 30) {
+async function fetchEvmAgents(page = 1, limit = 30, chainFilter = 'all') {
   try {
     const response = await fetch(`${LIES_API}?page=${page}&limit=${limit}`)
     
@@ -160,9 +160,18 @@ async function fetchEvmAgents(page = 1, limit = 30) {
       return []
     }
     
-    return data.agents
+    let agents = data.agents
       .filter(a => !isBlockedAddress(a.address))
       .map(transformEvmAgent)
+    
+    // Filter by chain if specified
+    if (chainFilter === 'base') {
+      agents = agents.filter(a => a.chain === 'base')
+    } else if (chainFilter === 'ethereum') {
+      agents = agents.filter(a => a.chain === 'ethereum')
+    }
+    
+    return agents
       
   } catch (err) {
     console.error('EVM fetch error:', err.message)
@@ -171,16 +180,25 @@ async function fetchEvmAgents(page = 1, limit = 30) {
 }
 
 // Main fetch function
-export async function fetchAllAgents(page = 1, limit = 50) {
+export async function fetchAllAgents(page = 1, limit = 50, chain = 'all') {
   try {
-    // Fetch from both sources in parallel
-    const [solana, evm] = await Promise.all([
-      fetchSolanaAgents(),
-      fetchEvmAgents(page, limit)
-    ])
-    
-    // Combine: Solana first, then EVM
-    return [...solana, ...evm]
+    // Fetch from appropriate sources based on chain filter
+    if (chain === 'solana') {
+      const solana = await fetchSolanaAgents()
+      return solana
+    } else if (chain === 'ethereum' || chain === 'base') {
+      const evm = await fetchEvmAgents(page, limit, chain)
+      return evm
+    } else {
+      // Fetch from both sources in parallel
+      const [solana, evm] = await Promise.all([
+        fetchSolanaAgents(),
+        fetchEvmAgents(page, limit)
+      ])
+      
+      // Combine: Solana first, then EVM
+      return [...solana, ...evm]
+    }
     
   } catch (err) {
     console.error('Fetch error:', err.message)

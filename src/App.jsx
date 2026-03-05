@@ -48,6 +48,7 @@ export default function App() {
   const [totalAgents, setTotalAgents] = useState(0)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [lastChainFilter, setLastChainFilter] = useState('all')
 
   const PAGE_SIZE = 50
 
@@ -55,12 +56,25 @@ export default function App() {
     loadAgents(1)
   }, [])
 
-  async function loadAgents(pageNum = 1) {
+  // Reset and reload when filters change
+  useEffect(() => {
+    if (chainFilter !== lastChainFilter) {
+      setLastChainFilter(chainFilter)
+      setAgents([])
+      setPage(1)
+      setHasMore(true)
+      loadAgents(1, chainFilter)
+    }
+  }, [chainFilter])
+
+  async function loadAgents(pageNum = 1, filterOverride = null) {
+    const activeChain = filterOverride !== null ? filterOverride : chainFilter
+    
     setLoading(true)
     setError(null)
     
     try {
-      const data = await fetchAllAgents(pageNum, PAGE_SIZE)
+      const data = await fetchAllAgents(pageNum, PAGE_SIZE, activeChain)
       
       if (data.length > 0) {
         if (pageNum === 1) {
