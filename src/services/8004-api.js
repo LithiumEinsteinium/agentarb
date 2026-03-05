@@ -57,11 +57,22 @@ function transformAgent(agent) {
   const networkId = agent.network_id || 'ethereum'
   const chain = mapNetwork(networkId)
   
+  // Better tier calculation
   let tier = 1
-  if (agent.reputation_score >= 80) tier = 5
-  else if (agent.reputation_score >= 60) tier = 4
-  else if (agent.reputation_score >= 40) tier = 3
-  else if (agent.reputation_score >= 20) tier = 2
+  
+  // Use token_id as a proxy for activity (higher = more recent/active)
+  const tokenId = agent.token_id || 0
+  
+  // Calculate tier based on multiple factors
+  if (tokenId > 50000) tier = 5  // Very recent
+  else if (tokenId > 30000) tier = 4
+  else if (tokenId > 10000) tier = 3
+  else if (tokenId > 1000) tier = 2
+  
+  // If has skills, bump tier
+  if (agent.skills && agent.skills.length > 0) {
+    tier = Math.min(tier + 1, 5)
+  }
   
   return {
     address: agent.address,
@@ -73,7 +84,8 @@ function transformAgent(agent) {
     uri: agent.metadata_uri || '',
     network: agent.network_name || networkId,
     description: agent.description || '',
-    skills: agent.skills || []
+    skills: agent.skills || [],
+    tokenId: tokenId
   }
 }
 
