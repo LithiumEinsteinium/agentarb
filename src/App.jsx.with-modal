@@ -48,6 +48,8 @@ export default function App() {
   const [totalAgents, setTotalAgents] = useState(0)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [lastChainFilter, setLastChainFilter] = useState('all')
+  const [selectedAgent, setSelectedAgent] = useState(null)
 
   const PAGE_SIZE = 50
 
@@ -55,12 +57,25 @@ export default function App() {
     loadAgents(1)
   }, [])
 
-  async function loadAgents(pageNum = 1) {
+  // Reset and reload when filters change
+  useEffect(() => {
+    if (chainFilter !== lastChainFilter) {
+      setLastChainFilter(chainFilter)
+      setAgents([])
+      setPage(1)
+      setHasMore(true)
+      loadAgents(1, chainFilter)
+    }
+  }, [chainFilter])
+
+  async function loadAgents(pageNum = 1, filterOverride = null) {
+    const activeChain = filterOverride !== null ? filterOverride : chainFilter
+    
     setLoading(true)
     setError(null)
     
     try {
-      const data = await fetchAllAgents(pageNum, PAGE_SIZE)
+      const data = await fetchAllAgents(pageNum, PAGE_SIZE, activeChain)
       
       if (data.length > 0) {
         if (pageNum === 1) {
@@ -201,12 +216,13 @@ export default function App() {
                 <div className="score-label">Arbitrage Score · {agent.reviews || 0} reviews</div>
               </div>
 
-              <div className="info-row">
-                <span className="info-label">Owner:</span>
-                <span className="info-value">{agent.owner ? agent.owner.slice(0,8)+'...'+agent.owner.slice(-6) : 'N/A'}</span>
-              </div>
-              
-              <div className="agent-actions">
+              <div className="card-buttons">
+                <button className="info-btn" onClick={() => setSelectedAgent(agent)}>ℹ️ Info</button>
+                
+                <div className="card-buttons">
+                <button className="info-btn" onClick={() => setSelectedAgent(agent)}>ℹ️ Info</button>
+                
+                <div className="agent-actions">
                 <button 
                   className="hire-btn"
                   onClick={() => {
@@ -270,6 +286,59 @@ export default function App() {
           <p className="premium-note">Built on x402 standard for seamless crypto payments</p>
         </div>
       </div>
+
+      {/* Agent Info Modal */}
+      {selectedAgent && (
+        <div className="modal-overlay" onClick={() => setSelectedAgent(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setSelectedAgent(null)}>×</button>
+            <h2>{selectedAgent.name}</h2>
+            
+            <div className="modal-section">
+              <h3>Details</h3>
+              <div className="modal-row"><span>Address:</span><code>{selectedAgent.address}</code></div>
+              <div className="modal-row"><span>Chain:</span><span>{selectedAgent.chain}</span></div>
+              <div className="modal-row"><span>Tier:</span><span>{getTierLabel(selectedAgent.tier)}</span></div>
+              {selectedAgent.owner && <div className="modal-row"><span>Owner:</span><code>{selectedAgent.owner.slice(0,10)}...{selectedAgent.owner?.slice(-6)}</code></div>}
+              {selectedAgent.uri && <div className="modal-row"><span>URI:</span><span className="truncate">{selectedAgent.uri}</span></div>}
+            </div>
+
+            <div className="modal-section">
+              <h3>Reputation</h3>
+              <div className="modal-row"><span>Score:</span><span>{selectedAgent.reputation || selectedAgent.reviews || 0}</span></div>
+              <div className="modal-row"><span>Reviews:</span><span>{selectedAgent.reviews || 0}</span></div>
+            </div>
+
+            <div className="modal-section">
+              <h3>Services</h3>
+              {selectedAgent.services?.map((s, i) => (
+                <div key={i} className="modal-service">
+                  <span className="service-name">{s.type}</span>
+                  {s.endpoint && <span className="service-endpoint truncate">{s.endpoint}</span>}
+                </div>
+              ))}
+            </div>
+
+            {selectedAgent.skills && selectedAgent.skills.length > 0 && (
+              <div className="modal-section">
+                <h3>Skills</h3>
+                <div className="modal-tags">
+                  {selectedAgent.skills.map((skill, i) => (
+                    <span key={i} className="modal-tag">{skill}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedAgent.description && (
+              <div className="modal-section">
+                <h3>Description</h3>
+                <p>{selectedAgent.description}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
