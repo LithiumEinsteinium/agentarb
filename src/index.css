@@ -86,17 +86,18 @@ body {
 
 .agent-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
   padding: 20px 0;
 }
 
 .agent-card {
   background: #151520;
   border-radius: 12px;
-  padding: 20px;
+  padding: 15px;
   border: 1px solid #252535;
   transition: transform 0.2s, border-color 0.2s;
+  overflow: hidden;
 }
 
 .agent-card:hover {
@@ -109,24 +110,31 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 15px;
+  gap: 10px;
 }
 
 .agent-card .name {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: bold;
+  word-break: break-word;
 }
 
 .agent-card .address {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #666;
   font-family: monospace;
+  word-break: break-all;
+  max-width: 180px;
+  display: block;
 }
 
 .agent-card .tier {
   padding: 4px 10px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: bold;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .tier-platinum { background: #e0e0ff; color: #000; }
@@ -139,9 +147,10 @@ body {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   background: #252535;
   margin-left: 8px;
+  vertical-align: middle;
 }
 
 .agent-card .services {
