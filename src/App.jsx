@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { fetchAllAgents } from './services/8004-api'
+import { fetchAllAgents, getAgentCount } from './services/8004-api'
 
 function calculateArbitrageScore(agent) {
   let score = (agent.tier || 0) * 20
@@ -25,6 +25,8 @@ function getExplorerUrl(address, chain) {
     return `https://etherscan.io/address/${address}`
   } else if (chain === 'base') {
     return `https://basescan.org/address/${address}`
+  } else if (chain === 'celo') {
+    return `https://celoscan.io/address/${address}`
   }
   return `#`
 }
@@ -43,6 +45,7 @@ export default function App() {
   const [tierFilter, setTierFilter] = useState('all')
   const [serviceFilter, setServiceFilter] = useState('all')
   const [search, setSearch] = useState('')
+  const [totalAgents, setTotalAgents] = useState(0)
 
   useEffect(() => {
     loadAgents()
@@ -53,11 +56,24 @@ export default function App() {
     setError(null)
     
     try {
-      const data = await fetchAllAgents()
-      setAgents(data)
+      // Fetch real agents from agentscan.info
+      const data = await fetchAllAgents(1, 30)
+      
+      if (data.length > 0) {
+        setAgents(data)
+        const count = await getAgentCount()
+        setTotalAgents(count)
+      } else {
+        // Fall back to mock if API fails
+        const { MOCK_AGENTS } = await import('./services/8004-api')
+        setAgents(MOCK_AGENTS)
+      }
     } catch (err) {
       console.error('Failed to load agents:', err)
       setError(err.message)
+      // Fall back to mock on error
+      const { MOCK_AGENTS } = await import('./services/8004-api')
+      setAgents(MOCK_AGENTS)
     }
     
     setLoading(false)
@@ -80,12 +96,15 @@ export default function App() {
       <div className="header">
         <h1>Agent Arbitrage</h1>
         <p>Find undervalued AI agents across chains — reputation vs price arbitrage</p>
+        {totalAgents > 0 && (
+          <p className="total-count">📊 {totalAgents.toLocaleString()} agents indexed</p>
+        )}
       </div>
 
       <div className="stats">
         <div className="stat-card">
           <div className="value">{filtered.length}</div>
-          <div className="label">Agents Found</div>
+          <div className="label">Showing</div>
         </div>
         <div className="stat-card">
           <div className="value">{avgScore}</div>
@@ -101,8 +120,9 @@ export default function App() {
         <select value={chainFilter} onChange={e => setChainFilter(e.target.value)}>
           <option value="all">All Chains</option>
           <option value="solana">Solana</option>
-          <option value="ethereum">Ethereum</option>
+          <option value="ethereum">Ethereum/BSC</option>
           <option value="base">Base</option>
+          <option value="celo">Celo</option>
         </select>
         
         <select value={tierFilter} onChange={e => setTierFilter(e.target.value)}>
@@ -129,7 +149,7 @@ export default function App() {
         />
       </div>
 
-      {loading && <div className="loading">Loading agents...</div>}
+      {loading && <div className="loading">Loading agents from agentscan...</div>}
       {error && <div className="loading" style={{ color: '#f87171' }}>Error: {error}</div>}
 
       <div className="agent-grid">

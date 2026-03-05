@@ -36,6 +36,12 @@ body {
   font-size: 1.1rem;
 }
 
+.header .total-count {
+  color: #667eea;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
 .filters {
   display: flex;
   gap: 15px;
