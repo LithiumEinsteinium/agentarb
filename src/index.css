@@ -119,6 +119,15 @@ body {
   word-break: break-word;
 }
 
+.agent-card .address a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.agent-card .address a:hover {
+  text-decoration: underline;
+}
+
 .agent-card .address {
   font-size: 0.75rem;
   color: #666;

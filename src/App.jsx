@@ -17,6 +17,17 @@ function getTierClass(tier) {
   return classes[tier] || 'tier-unrated'
 }
 
+function getExplorerUrl(address, chain) {
+  if (chain === 'solana') {
+    return `https://solscan.io/address/${address}`
+  } else if (chain === 'ethereum') {
+    return `https://etherscan.io/address/${address}`
+  } else if (chain === 'base') {
+    return `https://basescan.org/address/${address}`
+  }
+  return `#`
+}
+
 function getScoreClass(score) {
   if (score >= 70) return 'score-good'
   if (score >= 40) return 'score-neutral'
@@ -138,7 +149,11 @@ export default function App() {
                     {agent.name}
                     <span className="chain">{agent.chain}</span>
                   </div>
-                  <div className="address">{agent.address}</div>
+                  <div className="address">
+                    <a href={getExplorerUrl(agent.address, agent.chain)} target="_blank" rel="noopener noreferrer">
+                      {agent.address.slice(0, 6)}...{agent.address.slice(-4)}
+                    </a>
+                  </div>
                 </div>
                 <span className={`tier ${getTierClass(agent.tier)}`}>
                   {getTierLabel(agent.tier)}
