@@ -90,7 +90,7 @@ function transformAgent(agent) {
 }
 
 // Fetch agents via LiEs platform proxy
-export async function fetchAllAgents(page = 1, limit = 30) {
+export async function fetchAllAgents(page = 1, limit = 50) {
   try {
     const response = await fetch(`${LIES_API}?page=${page}&limit=${limit}`)
     
