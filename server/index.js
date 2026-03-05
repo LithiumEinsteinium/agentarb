@@ -15,19 +15,17 @@ app.use(cors())
 app.use(express.json())
 
 // Serve static files from React build
-app.use(express.static(path.join(__dirname, 'dist')))
-app.use('/assets', express.static(path.join(__dirname, 'dist/assets')))
+// server/index.js is one level deep, so dist is at ../dist
+app.use(express.static(path.join(__dirname, '../dist')))
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// Get all agents (mock for now - will integrate 8004 SDK)
+// Get all agents
 app.get('/api/agents', async (req, res) => {
   try {
-    // TODO: Replace with actual 8004 SDK calls
-    // For now, return mock data to show the UI
     const mockAgents = [
       {
         address: '4jHbm2DSBxvUEGQojJCn5bePy7ZmZQMAU7WCf7pPf7hW',
@@ -62,26 +60,21 @@ app.get('/api/agents', async (req, res) => {
         reviews: 3
       }
     ]
-    
+
     res.json(mockAgents)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
-// x402 payment endpoint (for future use)
+// x402 payment endpoint
 app.post('/api/pay', async (req, res) => {
-  const { amount, agentId } = req.body
-  
-  // TODO: Implement x402 payment
   res.json({ status: 'pending', message: 'Payment integration coming soon' })
 })
 
-// SPA fallback - serve index.html for all other routes (but not /api or /assets)
+// SPA fallback
 app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api') && !req.path.startsWith('/assets')) {
-    res.sendFile(path.join(__dirname, 'dist/index.html'))
-  }
+  res.sendFile(path.join(__dirname, '../dist/index.html'))
 })
 
 app.listen(PORT, () => {

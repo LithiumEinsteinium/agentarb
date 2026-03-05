@@ -17,7 +17,6 @@ body {
   padding: 20px;
 }
 
-/* Header */
 .header {
   text-align: center;
   padding: 40px 0;
@@ -37,7 +36,6 @@ body {
   font-size: 1.1rem;
 }
 
-/* Filters */
 .filters {
   display: flex;
   gap: 15px;
@@ -60,7 +58,6 @@ body {
   border-color: #667eea;
 }
 
-/* Stats */
 .stats {
   display: flex;
   gap: 20px;
@@ -87,7 +84,6 @@ body {
   font-size: 0.9rem;
 }
 
-/* Agent Grid */
 .agent-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -95,7 +91,6 @@ body {
   padding: 20px 0;
 }
 
-/* Agent Card */
 .agent-card {
   background: #151520;
   border-radius: 12px;
@@ -185,7 +180,6 @@ body {
   color: #888;
 }
 
-/* Loading */
 .loading {
   text-align: center;
   padding: 60px;
