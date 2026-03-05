@@ -94,10 +94,11 @@ export default function App() {
 
   const filtered = useMemo(() => {
     return agents.filter(a => {
-      if (chainFilter !== 'all' && a.chain !== chainFilter) return false
+      const chain = a.chain || 'ethereum'  // Default to ethereum
+      if (chainFilter !== 'all' && chain !== chainFilter) return false
       if (tierFilter !== 'all' && a.tier !== parseInt(tierFilter)) return false
       if (serviceFilter !== 'all' && !a.services?.some(s => s.type === serviceFilter)) return false
-      if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false
+      if (search && !a.name?.toLowerCase().includes(search.toLowerCase())) return false
       return true
     })
   }, [agents, chainFilter, tierFilter, serviceFilter, search])
