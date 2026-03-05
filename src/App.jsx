@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { fetchAllAgents, MOCK_AGENTS } from './services/8004-api'
+import { fetchAllAgents } from './services/8004-api'
 
 function calculateArbitrageScore(agent) {
   let score = (agent.tier || 0) * 20
@@ -43,36 +43,21 @@ export default function App() {
   const [tierFilter, setTierFilter] = useState('all')
   const [serviceFilter, setServiceFilter] = useState('all')
   const [search, setSearch] = useState('')
-  const [dataSource, setDataSource] = useState('real')
 
   useEffect(() => {
     loadAgents()
-  }, [dataSource])
+  }, [])
 
   async function loadAgents() {
     setLoading(true)
     setError(null)
     
     try {
-      if (dataSource === 'real') {
-        // Try to fetch real 8004 data
-        const realAgents = await fetchAllAgents()
-        
-        if (realAgents.length > 0) {
-          setAgents(realAgents)
-        } else {
-          // Fall back to mock data if no real agents found
-          console.log('No real agents found, using mock data')
-          setAgents(MOCK_AGENTS)
-        }
-      } else {
-        setAgents(MOCK_AGENTS)
-      }
+      const data = await fetchAllAgents()
+      setAgents(data)
     } catch (err) {
       console.error('Failed to load agents:', err)
       setError(err.message)
-      // Fall back to mock data on error
-      setAgents(MOCK_AGENTS)
     }
     
     setLoading(false)
@@ -95,21 +80,6 @@ export default function App() {
       <div className="header">
         <h1>Agent Arbitrage</h1>
         <p>Find undervalued AI agents across chains — reputation vs price arbitrage</p>
-      </div>
-
-      <div className="data-source-toggle">
-        <button 
-          className={dataSource === 'real' ? 'active' : ''} 
-          onClick={() => setDataSource('real')}
-        >
-          Real Data
-        </button>
-        <button 
-          className={dataSource === 'mock' ? 'active' : ''} 
-          onClick={() => setDataSource('mock')}
-        >
-          Mock Data
-        </button>
       </div>
 
       <div className="stats">
@@ -159,7 +129,7 @@ export default function App() {
         />
       </div>
 
-      {loading && <div className="loading">Loading agents from blockchain...</div>}
+      {loading && <div className="loading">Loading agents...</div>}
       {error && <div className="loading" style={{ color: '#f87171' }}>Error: {error}</div>}
 
       <div className="agent-grid">
