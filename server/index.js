@@ -15,7 +15,8 @@ app.use(cors())
 app.use(express.json())
 
 // Serve static files from React build
-app.use(express.static(path.join(__dirname, '../dist')))
+app.use(express.static(path.join(__dirname, 'dist')))
+app.use('/assets', express.static(path.join(__dirname, 'dist/assets')))
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -76,9 +77,11 @@ app.post('/api/pay', async (req, res) => {
   res.json({ status: 'pending', message: 'Payment integration coming soon' })
 })
 
-// SPA fallback - serve index.html for all other routes
+// SPA fallback - serve index.html for all other routes (but not /api or /assets)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'))
+  if (!req.path.startsWith('/api') && !req.path.startsWith('/assets')) {
+    res.sendFile(path.join(__dirname, 'dist/index.html'))
+  }
 })
 
 app.listen(PORT, () => {
