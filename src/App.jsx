@@ -316,7 +316,7 @@ export default function App() {
             </div>
             <div className="payment-details">
               <div className="payment-row"><span>Service:</span><span>{showPaymentModal.services?.[0]?.type || 'MCP'}</span></div>
-              <div className="payment-row"><span>Network:</span><span>{showPaymentModal.chain}</span></div>
+              <div className="payment-row"><span>Network:</span><span>{showPaymentModal.chain || 'N/A'}</span></div>
               <div className="payment-row"><span>x402 Support:</span><span className={showPaymentModal.x402Support ? 'supported' : 'unsupported'}>showPaymentModal.x402Support ? '✓ Yes' : '✗ No'}</span></div>
             </div>
             <div className="payment-pricing">
