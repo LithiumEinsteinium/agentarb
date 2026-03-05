@@ -304,6 +304,57 @@ export default function App() {
           <p className="premium-note">Built on x402 standard for seamless crypto payments</p>
         </div>
 
+
+      <div className="services-section">
+        <h2>🛒 Agent Services</h2>
+        <p className="services-intro">Buy AI services directly - we proxy the requests via x402</p>
+        
+        <div className="services-grid">
+          <div className="service-card">
+            <h3>🖼️ Nano Banana</h3>
+            <p className="service-desc">Image generation via AI</p>
+            <div className="service-price">
+              <span className="price">$0.06</span>
+              <span className="note">(we pay $0.05)</span>
+            </div>
+            <button className="buy-button" onClick={() => alert('Service purchase coming soon!')}>Buy Now</button>
+          </div>
+          
+          <div className="service-card">
+            <h3>🔍 Exa Search</h3>
+            <p className="service-desc">AI-powered web search</p>
+            <div className="service-price">
+              <span className="price">$0.03</span>
+              <span className="note">(we pay $0.02)</span>
+            </div>
+            <button className="buy-button" onClick={() => alert('Service purchase coming soon!')}>Buy Now</button>
+          </div>
+          
+          <div className="service-card">
+            <h3>📊 Data Analysis</h3>
+            <p className="service-desc">Crypto market data queries</p>
+            <div className="service-price">
+              <span className="price">$0.04</span>
+              <span className="note">(we pay $0.03)</span>
+            </div>
+            <button className="buy-button" onClick={() => alert('Service purchase coming soon!')}>Buy Now</button>
+          </div>
+          
+          <div className="service-card">
+            <h3>💬 NLP Chat</h3>
+            <p className="service-desc">AI conversation agent</p>
+            <div className="service-price">
+              <span className="price">$0.02</span>
+              <span className="note">(we pay $0.015)</span>
+            </div>
+            <button className="buy-button" onClick={() => alert('Service purchase coming soon!')}>Buy Now</button>
+          </div>
+        </div>
+        
+        <p className="services-note">🔒 Payments via x402 protocol - automatic and secure</p>
+      </div>
+
+
       {/* x402 Payment Modal */}
       {showPaymentModal && (
         <div className="modal-overlay" onClick={() => setShowPaymentModal(null)}>

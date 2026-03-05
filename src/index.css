@@ -650,3 +650,88 @@ body {
   color: #666;
   margin-top: 10px;
 }
+
+/* Services Section */
+.services-section {
+  margin-top: 40px;
+  padding: 30px 0;
+  border-top: 1px solid #252535;
+}
+
+.services-section h2 {
+  color: #667eea;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.services-intro {
+  text-align: center;
+  color: #888;
+  margin-bottom: 25px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.service-card {
+  background: #1a1a25;
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid #333;
+}
+
+.service-card h3 {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+.service-desc {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.service-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.service-price .price {
+  font-size: 1.3rem;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.service-price .note {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.buy-button {
+  width: 100%;
+  padding: 10px;
+  background: #252535;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.buy-button:hover {
+  background: #2a2a3a;
+  border-color: #667eea;
+}
+
+.services-note {
+  text-align: center;
+  color: #666;
+  font-size: 0.85rem;
+}
