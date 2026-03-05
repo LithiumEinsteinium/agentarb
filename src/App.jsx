@@ -46,37 +46,50 @@ export default function App() {
   const [serviceFilter, setServiceFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [totalAgents, setTotalAgents] = useState(0)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+
+  const PAGE_SIZE = 50
 
   useEffect(() => {
-    loadAgents()
+    loadAgents(1)
   }, [])
 
-  async function loadAgents() {
+  async function loadAgents(pageNum = 1) {
     setLoading(true)
     setError(null)
     
     try {
-      // Fetch real agents from agentscan.info
-      const data = await fetchAllAgents(1, 30)
+      const data = await fetchAllAgents(pageNum, PAGE_SIZE)
       
       if (data.length > 0) {
-        setAgents(data)
-        const count = await getAgentCount()
-        setTotalAgents(count)
+        if (pageNum === 1) {
+          setAgents(data)
+        } else {
+          setAgents(prev => [...prev, ...data])
+        }
+        setHasMore(data.length === PAGE_SIZE)
+        setPage(pageNum)
+        
+        if (pageNum === 1) {
+          const count = await getAgentCount()
+          setTotalAgents(count)
+        }
       } else {
-        // Fall back to mock if API fails
-        const { MOCK_AGENTS } = await import('./services/8004-api')
-        setAgents(MOCK_AGENTS)
+        setHasMore(false)
       }
     } catch (err) {
       console.error('Failed to load agents:', err)
       setError(err.message)
-      // Fall back to mock on error
-      const { MOCK_AGENTS } = await import('./services/8004-api')
-      setAgents(MOCK_AGENTS)
     }
     
     setLoading(false)
+  }
+
+  function loadMore() {
+    if (!loading && hasMore) {
+      loadAgents(page + 1)
+    }
   }
 
   const filtered = agents.filter(a => {
@@ -149,7 +162,7 @@ export default function App() {
         />
       </div>
 
-      {loading && <div className="loading">Loading agents from agentscan...</div>}
+      {loading && <div className="loading">Loading agents...</div>}
       {error && <div className="loading" style={{ color: '#f87171' }}>Error: {error}</div>}
 
       <div className="agent-grid">
@@ -188,6 +201,12 @@ export default function App() {
           )
         })}
       </div>
+      
+      {!loading && hasMore && (
+        <div className="load-more">
+          <button onClick={loadMore}>Load More Agents</button>
+        </div>
+      )}
       
       {!loading && filtered.length === 0 && (
         <div className="loading">No agents found matching your filters</div>

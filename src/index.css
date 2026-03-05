@@ -42,6 +42,26 @@ body {
   margin-top: 10px;
 }
 
+.load-more {
+  text-align: center;
+  padding: 20px;
+}
+
+.load-more button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.load-more button:hover {
+  transform: translateY(-2px);
+}
+
 .filters {
   display: flex;
   gap: 15px;
