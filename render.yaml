@@ -1,9 +1,10 @@
 services:
   - type: web
     name: agent-arb
-    env: node
-    buildCommand: echo "Pre-built files included"
-    startCommand: npm run start
+    env: static
+    buildCommand: echo "Static site - no build needed"
+    staticPublishDirectory: dist
+    startCommand: npx serve dist -l $PORT
     envVars:
       - key: NODE_VERSION
         value: "22"
