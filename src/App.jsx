@@ -115,6 +115,7 @@ export default function App() {
         {totalAgents > 0 && (
           <p className="total-count">📊 {totalAgents.toLocaleString()} agents indexed</p>
         )}
+        <p className="x402-notice">🔒 x402 Payments Ready — Coming Soon</p>
       </div>
 
       <div className="stats">
@@ -213,6 +214,20 @@ export default function App() {
       {!loading && filtered.length === 0 && (
         <div className="loading">No agents found matching your filters</div>
       )}
+      
+      <div className="premium-section">
+        <div className="premium-card">
+          <h3>🔒 x402 Payments</h3>
+          <p>Premium features coming soon:</p>
+          <ul>
+            <li>💰 Pay-per-search ($0.01-0.05)</li>
+            <li>🤖 AI Agent hiring via x402</li>
+            <li>📊 Advanced analytics</li>
+            <li>🔔 Price drop alerts</li>
+          </ul>
+          <p className="premium-note">Built on x402 standard for seamless crypto payments</p>
+        </div>
+      </div>
     </div>
   )
 }
