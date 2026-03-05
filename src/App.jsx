@@ -205,11 +205,11 @@ export default function App() {
                 <button 
                   className="hire-btn"
                   onClick={() => {
-                    if (agent.uri) {
-                      const url = agent.uri.startsWith('ipfs://') 
-                        ? `https://ipfs.io/ipfs/${agent.uri.replace('ipfs://', '')}`
-                        : agent.uri
-                      window.open(url, '_blank')
+                    // Try to open agent URI, fallback to owner on explorer
+                    if (agent.uri && !agent.uri.startsWith('ipfs://')) {
+                      window.open(agent.uri, '_blank')
+                    } else if (agent.owner) {
+                      window.open(getExplorerUrl(agent.owner, 'solana'), '_blank')
                     }
                   }}
                 >
@@ -219,12 +219,16 @@ export default function App() {
                   <button 
                     className="connect-btn"
                     onClick={() => {
-                      const service = agent.services.find(s => s.endpoint) || agent.services[0]
+                      const service = agent.services.find(s => 
+                        s.endpoint && !s.endpoint.includes('github.com')
+                      ) || agent.services[0]
                       if (service?.endpoint) {
                         let url = service.endpoint
+                        // Convert IPFS to gateway
                         if (url.startsWith('ipfs://')) {
                           url = `https://ipfs.io/ipfs/${url.replace('ipfs://', '')}`
                         }
+                        // Open as-is for GitHub/websites
                         window.open(url, '_blank')
                       }
                     }}
