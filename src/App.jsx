@@ -204,16 +204,29 @@ export default function App() {
               <div className="agent-actions">
                 <button 
                   className="hire-btn"
-                  onClick={() => window.open(agent.uri || '#', '_blank')}
+                  onClick={() => {
+                    if (agent.uri) {
+                      const url = agent.uri.startsWith('ipfs://') 
+                        ? `https://ipfs.io/ipfs/${agent.uri.replace('ipfs://', '')}`
+                        : agent.uri
+                      window.open(url, '_blank')
+                    }
+                  }}
                 >
-                  🤝 Hire Agent
+                  🤝 Hire
                 </button>
-                {agent.services?.some(s => s.endpoint) && (
+                {agent.services?.length > 0 && (
                   <button 
                     className="connect-btn"
                     onClick={() => {
-                      const mcp = agent.services.find(s => s.endpoint)
-                      if (mcp?.endpoint) window.open(mcp.endpoint, '_blank')
+                      const service = agent.services.find(s => s.endpoint) || agent.services[0]
+                      if (service?.endpoint) {
+                        let url = service.endpoint
+                        if (url.startsWith('ipfs://')) {
+                          url = `https://ipfs.io/ipfs/${url.replace('ipfs://', '')}`
+                        }
+                        window.open(url, '_blank')
+                      }
                     }}
                   >
                     🔗 Connect
