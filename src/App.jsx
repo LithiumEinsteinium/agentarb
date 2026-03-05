@@ -31,6 +31,28 @@ function getExplorerUrl(address, chain) {
   return `#`
 }
 
+// x402 payment handler
+async function handleX402Payment(serviceUrl, body) {
+  try {
+    const response = await fetch('https://frames.ag/api/wallets/YOUR_USERNAME/actions/x402/fetch', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer YOUR_API_TOKEN',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: serviceUrl,
+        method: 'POST',
+        body: body
+      })
+    });
+    return await response.json();
+  } catch (err) {
+    console.error('x402 payment failed:', err);
+    throw err;
+  }
+}
+
 function getScoreClass(score) {
   if (score >= 70) return 'score-good'
   if (score >= 40) return 'score-neutral'
@@ -51,6 +73,7 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [x402Filter, setX402Filter] = useState('all')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
+  const [payingService, setPayingService] = useState(null)
   const [showServices, setShowServices] = useState(true)
 
   const PAGE_SIZE = 50
@@ -139,28 +162,28 @@ export default function App() {
             <h3>🖼️ Nano Banana</h3>
             <p className="service-desc">Image gen</p>
             <div className="service-price"><span className="price">$0.06</span></div>
-            <button className="buy-button">Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>🔍 Exa Search</h3>
             <p className="service-desc">Web search</p>
             <div className="service-price"><span className="price">$0.03</span></div>
-            <button className="buy-button">Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>📊 Data Analysis</h3>
             <p className="service-desc">Market data</p>
             <div className="service-price"><span className="price">$0.04</span></div>
-            <button className="buy-button">Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>💬 NLP Chat</h3>
             <p className="service-desc">AI chat</p>
             <div className="service-price"><span className="price">$0.02</span></div>
-            <button className="buy-button">Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>Buy</button>
           </div>
         </div>
         
@@ -397,6 +420,41 @@ export default function App() {
       </div>
 
 
+
+      {payingService && (
+        <div className="modal-overlay" onClick={() => setPayingService(null)}>
+          <div className="modal-content payment-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setPayingService(null)}>×</button>
+            <h2>💳 x402 Payment</h2>
+            <div className="payment-agent-info">
+              <h3>{payingService.name}</h3>
+              <p className="payment-address">Service via x402 proxy</p>
+            </div>
+            <div className="payment-pricing">
+              <div className="price-option">
+                <span>Your Price</span>
+                <span className="price">${payingService.price}</span>
+              </div>
+              <div className="price-option">
+                <span>We Pay</span>
+                <span className="price">${payingService.cost}</span>
+              </div>
+              <div className="price-option profit">
+                <span>You Save</span>
+                <span className="price">${payingService.price - payingService.cost}</span>
+              </div>
+            </div>
+            <div className="payment-actions">
+              <button className="pay-button" onClick={() => alert('x402 payment will connect to your wallet')}>
+                🔗 Connect Wallet
+              </button>
+              <p className="payment-note">Powered by x402 protocol</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* x402 Payment Modal */}
       {showPaymentModal && (
         <div className="modal-overlay" onClick={() => setShowPaymentModal(null)}>
@@ -420,7 +478,7 @@ export default function App() {
               </div>
             </div>
             <div className="payment-actions">
-              <button className="pay-button" onClick={() => alert('x402 payment integration coming soon!')}>💳 Pay with Wallet</button>
+              <button className="pay-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>💳 Pay with Wallet</button>
               <p className="payment-note">Payment via x402 protocol</p>
             </div>
           </div>
