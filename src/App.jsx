@@ -42,7 +42,9 @@ async function processPayment(service, payingService, prompt) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ paymentTxHash: txHash })
     });
+    console.log("TX Hash:", txHash);
     const { valid } = await verifyRes.json();
+    console.log("Verification result:", valid);
     
     if (!valid) { // Re-enable
       alert("Payment verification failed!");
