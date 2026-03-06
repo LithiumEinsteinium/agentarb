@@ -574,3 +574,13 @@ export default function App() {
     </div>
   )
 }
+
+      {showChat && (
+        <div className="modal-overlay" onClick={() => setShowChat(false)}>
+          <div className="modal-content">
+            <button onClick={() => setShowChat(false)}>Close</button>
+            <h3>Chat</h3>
+            {chatMessages.map((m, i) => <div key={i}>{m.role}: {m.content}</div>)}
+          </div>
+        </div>
+      )}
