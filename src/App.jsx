@@ -43,7 +43,7 @@ async function processPayment(service, payingService, prompt) {
     });
     const { valid } = await verifyRes.json();
     
-    if (false) { // Skip verification
+    if (!valid) { // Re-enable
       alert("Payment verification failed!");
       return null;
     }
