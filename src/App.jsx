@@ -56,7 +56,7 @@ async function processPayment(service, payingService) {
     });
     const result = await serviceRes.json();
     
-    setCurrentService({service: result.service, endpoint: payingService.endpoint}); setChatMessages([{role: "assistant", content: result?.response?.content || JSON.stringify(result)}]);
+    
     return result;
   } catch (err) {
     console.error("Payment error:", err);
