@@ -3,7 +3,7 @@ import { useWallet } from './hooks/useWallet'
 import { fetchAllAgents, getAgentCount } from './services/8004-api'
 
 // Process payment and call service
-async function processPayment(service, payingService) {
+async function processPayment(service, payingService, prompt) {
   if (!window.ethereum) {
     alert("Please connect your wallet first!");
     return null;
@@ -52,7 +52,7 @@ async function processPayment(service, payingService) {
     const serviceRes = await fetch("https://lies-platform.onrender.com" + payingService.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: userPrompt || "Hello" })
+      body: JSON.stringify({ prompt: prompt || "Hello" })
     });
     const result = await serviceRes.json();
     
@@ -530,7 +530,7 @@ export default function App() {
               </div>
             </div>
             <div className="payment-actions">
-              <button className="pay-button" onClick={async () => { const result = await processPayment(null, payingService); if (result) alert("Success! Response: " + JSON.stringify(result).substring(0, 200)); }}>
+              <button className="pay-button" onClick={async () => { const result = await processPayment(null, payingService, userPrompt); if (result) alert("Success! Response: " + JSON.stringify(result).substring(0, 200)); }}>
                 🔗 Connect Wallet (MetaMask, Coinbase, OKX)
               </button>
               <input placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
