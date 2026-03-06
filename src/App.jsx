@@ -24,6 +24,12 @@ async function processPayment(service, payingService) {
     const { tx } = await buildRes.json();
     
     // Sign and submit
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x2105" }]
+      });
+    } catch (e) { console.log("Chain switch error:", e); }
     const txHash = await window.ethereum.request({
       method: "eth_sendTransaction",
       params: [{ ...tx, from }]
