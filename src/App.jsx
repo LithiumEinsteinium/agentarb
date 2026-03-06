@@ -60,9 +60,9 @@ async function processPayment(service, payingService) {
     return result;
   } catch (err) {
     console.error("Payment error:", err);
-      alert("Error: " + err.message + ". Check console for details.");
+      alert("Error: " + err.message);
     console.error("Payment error:", err);
-      alert("Error: " + err.message + ". Check console for details."); alert("Error: " + err.message + "\n" + (err.response?.data || ""));;
+      alert("Error: " + err.message); alert("Error: " + err.message + "\n" + (err.response?.data || ""));;
     return null;
   }
 }
@@ -74,7 +74,7 @@ async function fetchServices() {
     return data.services || [];
   } catch (err) {
     console.error("Payment error:", err);
-      alert("Error: " + err.message + ". Check console for details.");
+      alert("Error: " + err.message);
     return [];
   }
 }
