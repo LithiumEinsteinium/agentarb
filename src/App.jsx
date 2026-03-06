@@ -156,29 +156,50 @@ export default function App() {
             <h3>🖼️ Nano Banana</h3>
             <p className="service-desc">Image gen</p>
             <div className="service-price"><span className="price">$0.06</span></div>
-            <button className="buy-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/basic-chat'})}>Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/grok-fast'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>🔍 Exa Search</h3>
             <p className="service-desc">Web search</p>
             <div className="service-price"><span className="price">$0.03</span></div>
-            <button className="buy-button" onClick={() => setPayingService({name: 'Premium Chat', price: 0.25, service: 'premium-chat', endpoint: '/api/services/basic-chat'})}>Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Premium Chat', price: 0.25, service: 'premium-chat', endpoint: '/api/services/grok-fast'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>📊 Data Analysis</h3>
             <p className="service-desc">Market data</p>
             <div className="service-price"><span className="price">$0.04</span></div>
-            <button className="buy-button" onClick={() => setPayingService({name: 'Code Assistant', price: 0.03, service: 'code-assistant', endpoint: '/api/services/basic-chat'})}>Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Code Assistant', price: 0.03, service: 'code-assistant', endpoint: '/api/services/grok-fast'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>💬 NLP Chat</h3>
             <p className="service-desc">AI chat</p>
             <div className="service-price"><span className="price">$0.02</span></div>
-            <button className="buy-button" onClick={() => setPayingService({name: 'Grok Fast', price: 0.04, service: 'grok-fast', endpoint: '/api/services/basic-chat'})}>Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Grok Fast', price: 0.04, service: 'grok-fast', endpoint: '/api/services/grok-fast'})}>Buy</button>
           </div>
+          </div>
+          
+          <div className="service-card">
+            <h3>🔦 Spotlight</h3>
+            <p className="service-desc">Best model (GPT-4o)</p>
+            <div className="service-price"><span className="price">$0.75</span></div>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Spotlight', price: 0.75, service: 'spotlight', endpoint: '/api/services/spotlight'})}>Hire</button>
+          </div>
+          
+          <div className="service-card">
+            <h3>🖼️ Image Gen</h3>
+            <p className="service-desc">AI image generation</p>
+            <div className="service-price"><span className="price">$0.08</span></div>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Image Gen', price: 0.08, service: 'image-gen', endpoint: '/api/services/image-gen'})}>Hire</button>
+          </div>
+          
+          <div className="service-card">
+            <h3>🔊 Audio Gen</h3>
+            <p className="service-desc">Text to speech</p>
+            <div className="service-price"><span className="price">$0.03</span></div>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Audio Gen', price: 0.03, service: 'audio-gen', endpoint: '/api/services/audio-gen'})}>Hire</button>
         </div>
         
         <p className="services-note">🔒 x402 payments</p>
@@ -472,7 +493,7 @@ export default function App() {
               </div>
             </div>
             <div className="payment-actions">
-              <button className="pay-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/basic-chat'})}>💳 Pay with Wallet</button>
+              <button className="pay-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/grok-fast'})}>💳 Pay with Wallet</button>
               <p className="payment-note">Payment via x402 protocol</p>
             </div>
           </div>
