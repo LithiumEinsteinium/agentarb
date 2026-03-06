@@ -53,8 +53,10 @@ async function processPayment(service, payingService) {
     alert("Service response: " + JSON.stringify(result));
     return result;
   } catch (err) {
-    console.error(err);
-    console.error(err); alert("Error: " + (err.message || "Payment failed - try again"));
+    console.error("Payment error:", err);
+      alert("Error: " + err.message + ". Check console for details.");
+    console.error("Payment error:", err);
+      alert("Error: " + err.message + ". Check console for details."); alert("Error: " + err.message + "\n" + (err.response?.data || ""));;
     return null;
   }
 }
@@ -65,7 +67,8 @@ async function fetchServices() {
     const data = await res.json();
     return data.services || [];
   } catch (err) {
-    console.error(err);
+    console.error("Payment error:", err);
+      alert("Error: " + err.message + ". Check console for details.");
     return [];
   }
 }
