@@ -56,7 +56,7 @@ async function processPayment(service, payingService) {
     });
     const result = await serviceRes.json();
     
-    console.log("Response:", result);
+    alert("Success! Response: " + (result?.response?.content || JSON.stringify(result)));
     return result;
   } catch (err) {
     console.error("Payment error:", err);
