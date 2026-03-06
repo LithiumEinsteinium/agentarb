@@ -5,12 +5,14 @@ import { fetchAllAgents, getAgentCount } from './services/8004-api'
 // Process payment and call service
 async function processPayment(service, payingService) {
   if (!window.ethereum) {
-    alert("Please connect a wallet (MetaMask, Coinbase, OKX)!");
+    alert("Please connect your wallet first!");
     return null;
   }
   try {
     // Get wallet
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    const accounts = window.phantom?.ethereum 
+      ? (await window.phantom.ethereum.request({ method: 'eth_requestAccounts' }))
+      : (await window.ethereum.request({ method: 'eth_requestAccounts' }));
     const from = accounts[0];
     
     // Build transaction
@@ -52,7 +54,7 @@ async function processPayment(service, payingService) {
     return result;
   } catch (err) {
     console.error(err);
-    alert("Error: " + err.message);
+    console.error(err); alert("Error: " + (err.message || "Payment failed - try again"));
     return null;
   }
 }
