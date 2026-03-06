@@ -52,7 +52,7 @@ async function processPayment(service, payingService) {
     const serviceRes = await fetch("https://lies-platform.onrender.com" + payingService.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: "Hello" })
+      body: JSON.stringify({ prompt: userPrompt || "Hello" })
     });
     const result = await serviceRes.json();
     
@@ -533,7 +533,8 @@ export default function App() {
               <button className="pay-button" onClick={async () => { const result = await processPayment(null, payingService); if (result) alert("Success! Response: " + JSON.stringify(result).substring(0, 200)); }}>
                 🔗 Connect Wallet (MetaMask, Coinbase, OKX)
               </button>
-              <p className="payment-note">Powered by x402 protocol</p>
+              <input className="prompt-input" placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
+            <p className="payment-note">Powered by x402 protocol</p>
             </div>
           </div>
         </div>
@@ -564,7 +565,8 @@ export default function App() {
             </div>
             <div className="payment-actions">
               <button className="pay-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/grok-fast'})}>💳 Pay with Wallet</button>
-              <p className="payment-note">Payment via x402 protocol</p>
+              <input className="prompt-input" placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
+            <p className="payment-note">Payment via x402 protocol</p>
             </div>
           </div>
         </div>
