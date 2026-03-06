@@ -2,6 +2,17 @@ import { useState, useEffect, useMemo } from 'react'
 import { useWallet } from './hooks/useWallet'
 import { fetchAllAgents, getAgentCount } from './services/8004-api'
 
+async function fetchServices() {
+  try {
+    const res = await fetch("https://lies-platform.onrender.com/api/x402/services");
+    const data = await res.json();
+    return data.services || [];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
 function calculateArbitrageScore(agent) {
   let score = (agent.tier || 0) * 20
   score += (agent.services?.length || 0) * 10
