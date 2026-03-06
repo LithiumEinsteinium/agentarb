@@ -132,7 +132,7 @@ export default function App() {
   const [x402Filter, setX402Filter] = useState('all')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
   const [chatMessages, setChatMessages] = useState([]);
-  const [currentService, setCurrentService] = useState(null);
+  const [currentService, setCurrentService] = useState(null)
   const [payingService, setPayingService] = useState(null)
   const [showServices, setShowServices] = useState(true)
   const [services, setServices] = useState([])
