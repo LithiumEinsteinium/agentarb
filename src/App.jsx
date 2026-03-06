@@ -134,10 +134,10 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [x402Filter, setX402Filter] = useState('all')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
+  const [userPrompt, setUserPrompt] = useState("")
   const [chatOpen, setChatOpen] = useState(false)
   const [chatMessages, setChatMessages] = useState([])
   const [currentService, setCurrentService] = useState(null)
-  const [userPrompt, setUserPrompt] = useState("")
   const [payingService, setPayingService] = useState(null)
   const [showServices, setShowServices] = useState(true)
   const [services, setServices] = useState([])
@@ -579,13 +579,3 @@ export default function App() {
     </div>
   )
 }
-
-      {chatOpen && (
-        <div className="modal-overlay" onClick={() => setChatOpen(false)}>
-          <div className="modal-content">
-            <button onClick={() => setChatOpen(false)}>Close</button>
-            <h3>Chat</h3>
-            {chatMessages.map((m, i) => <div key={i}>{m.role}: {m.content}</div>)}
-          </div>
-        </div>
-      )}
