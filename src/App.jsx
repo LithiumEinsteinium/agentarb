@@ -2,6 +2,61 @@ import { useState, useEffect, useMemo } from 'react'
 import { useWallet } from './hooks/useWallet'
 import { fetchAllAgents, getAgentCount } from './services/8004-api'
 
+// Process payment and call service
+async function processPayment(service, payingService) {
+  if (!window.ethereum) {
+    alert("Please install MetaMask!");
+    return null;
+  }
+  try {
+    // Get wallet
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    const from = accounts[0];
+    
+    // Build transaction
+    const buildRes = await fetch("https://lies-platform.onrender.com/api/x402/build-tx", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: String(payingService.price) })
+    });
+    const { tx } = await buildRes.json();
+    
+    // Sign and submit
+    const txHash = await window.ethereum.request({
+      method: "eth_sendTransaction",
+      params: [{ ...tx, from }]
+    });
+    
+    // Verify payment
+    const verifyRes = await fetch("https://lies-platform.onrender.com/api/x402/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentTxHash: txHash })
+    });
+    const { valid } = await verifyRes.json();
+    
+    if (!valid) {
+      alert("Payment verification failed!");
+      return null;
+    }
+    
+    // Call the service
+    const serviceRes = await fetch("https://lies-platform.onrender.com" + payingService.endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: "Hello" })
+    });
+    const result = await serviceRes.json();
+    
+    alert("Service response: " + JSON.stringify(result));
+    return result;
+  } catch (err) {
+    console.error(err);
+    alert("Error: " + err.message);
+    return null;
+  }
+}
+
 async function fetchServices() {
   try {
     const res = await fetch("https://lies-platform.onrender.com/api/x402/services");
@@ -460,7 +515,7 @@ export default function App() {
               </div>
             </div>
             <div className="payment-actions">
-              <button className="pay-button" onClick={async () => { const tx = await processPayment(); if (tx) alert("Tx sent: " + tx); }}>
+              <button className="pay-button" onClick={async () => { const result = await processPayment(null, payingService); if (result) alert("Success! Response: " + JSON.stringify(result).substring(0, 200)); }}>
                 🔗 Connect Wallet
               </button>
               <p className="payment-note">Powered by x402 protocol</p>
