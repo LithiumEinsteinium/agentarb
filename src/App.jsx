@@ -156,28 +156,28 @@ export default function App() {
             <h3>🖼️ Nano Banana</h3>
             <p className="service-desc">Image gen</p>
             <div className="service-price"><span className="price">$0.06</span></div>
-            <button className="buy-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/basic-chat'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>🔍 Exa Search</h3>
             <p className="service-desc">Web search</p>
             <div className="service-price"><span className="price">$0.03</span></div>
-            <button className="buy-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Premium Chat', price: 0.25, service: 'premium-chat', endpoint: '/api/services/basic-chat'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>📊 Data Analysis</h3>
             <p className="service-desc">Market data</p>
             <div className="service-price"><span className="price">$0.04</span></div>
-            <button className="buy-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Code Assistant', price: 0.03, service: 'code-assistant', endpoint: '/api/services/basic-chat'})}>Buy</button>
           </div>
           
           <div className="service-card">
             <h3>💬 NLP Chat</h3>
             <p className="service-desc">AI chat</p>
             <div className="service-price"><span className="price">$0.02</span></div>
-            <button className="buy-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>Buy</button>
+            <button className="buy-button" onClick={() => setPayingService({name: 'Grok Fast', price: 0.04, service: 'grok-fast', endpoint: '/api/services/basic-chat'})}>Buy</button>
           </div>
         </div>
         
@@ -472,7 +472,7 @@ export default function App() {
               </div>
             </div>
             <div className="payment-actions">
-              <button className="pay-button" onClick={() => setPayingService({name: 'Nano Banana', price: 0.06, cost: 0.05, url: 'https://api.nanobanana.xyz/generate'})}>💳 Pay with Wallet</button>
+              <button className="pay-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/basic-chat'})}>💳 Pay with Wallet</button>
               <p className="payment-note">Payment via x402 protocol</p>
             </div>
           </div>
