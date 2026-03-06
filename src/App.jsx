@@ -133,7 +133,6 @@ export default function App() {
   const [showPaymentModal, setShowPaymentModal] = useState(null)
   const [chatOpen, setChatOpen] = useState(false)
   const [chatMessages, setChatMessages] = useState([])
-  const [chatMessages, setChatMessages] = useState([]);
   const [currentService, setCurrentService] = useState(null)
   const [payingService, setPayingService] = useState(null)
   const [showServices, setShowServices] = useState(true)
