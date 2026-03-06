@@ -131,6 +131,8 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [x402Filter, setX402Filter] = useState('all')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatMessages, setChatMessages] = useState([])
   const [chatMessages, setChatMessages] = useState([]);
   const [currentService, setCurrentService] = useState(null)
   const [payingService, setPayingService] = useState(null)
