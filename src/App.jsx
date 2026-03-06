@@ -32,7 +32,7 @@ async function processPayment(service, payingService) {
     } catch (e) { console.log("Chain switch error:", e); }
     const txHash = await window.ethereum.request({
       method: "eth_sendTransaction",
-      params: [{ ...tx, from }]
+      params: [{ ...tx, from, chainId: "0x2105" }]
     });
     
     // Verify payment
