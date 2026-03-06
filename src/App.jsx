@@ -578,4 +578,21 @@ export default function App() {
       </div>
     </div>
   )
+
+      {chatOpen && (
+        <div className="modal-overlay" onClick={() => setChatOpen(false)}>
+          <div className="modal-content" style={{maxWidth: '500px'}}>
+            <button onClick={() => setChatOpen(false)} style={{float: 'right'}}>X</button>
+            <h3>Chat</h3>
+            <div style={{maxHeight: '300px', overflow: 'auto', background: '#f5f5f5', padding: '10px', margin: '10px 0'}}>
+              {chatMessages.map((m, i) => (
+                <div key={i} style={{padding: '8px', margin: '4px 0', background: m.role === 'user' ? '#007bff' : '#fff', color: m.role === 'user' ? '#fff' : '#000'}}>
+                  <strong>{m.role}:</strong> {m.content}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
 }
