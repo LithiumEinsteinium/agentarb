@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 
-const PHANTOM_APP_ID = '2bca8d09-61a7-4723-ac15-78f26035ded0';
-
 export function useWallet() {
   const [address, setAddress] = useState(null);
   const [connecting, setConnecting] = useState(false);
-  const [walletType, setWalletType] = useState(null);
+  const [error, setError] = useState(null);
 
   const getWalletName = () => {
     const w = window.ethereum;
@@ -19,13 +17,11 @@ export function useWallet() {
   };
 
   useEffect(() => {
-    setWalletType(getWalletName());
-    
     if (window.ethereum) {
       window.ethereum.request({ method: 'eth_accounts' })
         .then(accounts => {
           if (accounts.length > 0) setAddress(accounts[0]);
-        });
+        }).catch(e => setError(e.message));
       
       window.ethereum.on('accountsChanged', (accounts) => {
         setAddress(accounts[0] || null);
@@ -35,20 +31,20 @@ export function useWallet() {
 
   const connect = async () => {
     if (!window.ethereum) {
-      alert('Please install a wallet!');
+      setError('No wallet found. Please install a wallet.');
       return;
     }
     try {
       setConnecting(true);
+      setError(null);
       const accounts = await window.ethereum.request({ 
         method: 'eth_requestAccounts' 
       });
       if (accounts.length > 0) {
         setAddress(accounts[0]);
-        setWalletType(getWalletName());
       }
     } catch (err) {
-      console.error(err);
+      setError(err.message);
     } finally {
       setConnecting(false);
     }
@@ -56,5 +52,5 @@ export function useWallet() {
 
   const disconnect = () => setAddress(null);
 
-  return { address, connect, disconnect, connecting, walletType };
+  return { address, connect, disconnect, connecting, error, walletType: getWalletName() };
 }
