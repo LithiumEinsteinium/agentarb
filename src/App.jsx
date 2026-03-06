@@ -5,7 +5,7 @@ import { fetchAllAgents, getAgentCount } from './services/8004-api'
 // Process payment and call service
 async function processPayment(service, payingService) {
   if (!window.ethereum) {
-    alert("Please install MetaMask!");
+    alert("Please connect a wallet (MetaMask, Coinbase, OKX)!");
     return null;
   }
   try {
