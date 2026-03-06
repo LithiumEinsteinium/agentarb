@@ -5,19 +5,18 @@ export function useWallet() {
   const [connecting, setConnecting] = useState(false);
   const [walletType, setWalletType] = useState(null);
 
-  const detectWallet = () => {
+  const getWalletName = () => {
     const w = window.ethereum;
     if (!w) return null;
     if (w.isMetaMask) return 'MetaMask';
     if (w.isCoinbaseWallet) return 'Coinbase Wallet';
     if (w.isOkexWallet) return 'OKX Wallet';
     if (w.isBraveWallet) return 'Brave Wallet';
-    if (w.isRabby) return 'Rabby';
     return 'Wallet';
   };
 
   useEffect(() => {
-    setWalletType(detectWallet());
+    setWalletType(getWalletName());
     
     if (window.ethereum) {
       window.ethereum.request({ method: 'eth_accounts' })
@@ -33,25 +32,20 @@ export function useWallet() {
 
   const connect = async () => {
     if (!window.ethereum) {
-      // Try to open wallet download page
-      window.open('https://metamask.io/download/', '_blank');
+      alert('Please install a crypto wallet!');
       return;
     }
     try {
       setConnecting(true);
-      
-      // Try standard requestAccounts
       const accounts = await window.ethereum.request({ 
         method: 'eth_requestAccounts' 
       });
-      
       if (accounts.length > 0) {
         setAddress(accounts[0]);
-        setWalletType(detectWallet());
+        setWalletType(getWalletName());
       }
     } catch (err) {
-      console.error('Connection error:', err);
-      alert('Failed to connect wallet: ' + err.message);
+      console.error(err);
     } finally {
       setConnecting(false);
     }

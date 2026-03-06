@@ -516,7 +516,7 @@ export default function App() {
             </div>
             <div className="payment-actions">
               <button className="pay-button" onClick={async () => { const result = await processPayment(null, payingService); if (result) alert("Success! Response: " + JSON.stringify(result).substring(0, 200)); }}>
-                🔗 Connect Wallet
+                🔗 Connect Wallet (MetaMask, Coinbase, OKX)
               </button>
               <p className="payment-note">Powered by x402 protocol</p>
             </div>
