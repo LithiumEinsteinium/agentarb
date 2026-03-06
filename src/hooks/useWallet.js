@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const PHANTOM_APP_ID = '2bca8d09-61a7-4723-ac15-78f26035ded0';
+
 export function useWallet() {
   const [address, setAddress] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -8,6 +10,7 @@ export function useWallet() {
   const getWalletName = () => {
     const w = window.ethereum;
     if (!w) return null;
+    if (w.isPhantom) return 'Phantom';
     if (w.isMetaMask) return 'MetaMask';
     if (w.isCoinbaseWallet) return 'Coinbase Wallet';
     if (w.isOkexWallet) return 'OKX Wallet';
@@ -32,7 +35,7 @@ export function useWallet() {
 
   const connect = async () => {
     if (!window.ethereum) {
-      alert('Please install a crypto wallet!');
+      alert('Please install a wallet!');
       return;
     }
     try {
