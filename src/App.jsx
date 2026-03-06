@@ -131,9 +131,9 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [x402Filter, setX402Filter] = useState('all')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
+  const [userPrompt, setUserPrompt] = useState("")
   const [chatOpen, setChatOpen] = useState(false)
   const [chatMessages, setChatMessages] = useState([])
-  const [showChat, setShowChat] = useState(false)
   const [currentService, setCurrentService] = useState(null)
   const [payingService, setPayingService] = useState(null)
   const [showServices, setShowServices] = useState(true)
@@ -533,8 +533,8 @@ export default function App() {
               <button className="pay-button" onClick={async () => { const result = await processPayment(null, payingService); if (result) alert("Success! Response: " + JSON.stringify(result).substring(0, 200)); }}>
                 🔗 Connect Wallet (MetaMask, Coinbase, OKX)
               </button>
-              <input className="prompt-input" placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
-            <p className="payment-note">Powered by x402 protocol</p>
+              <input placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
+              <p className="payment-note">Powered by x402 protocol</p>
             </div>
           </div>
         </div>
@@ -565,8 +565,8 @@ export default function App() {
             </div>
             <div className="payment-actions">
               <button className="pay-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/grok-fast'})}>💳 Pay with Wallet</button>
-              <input className="prompt-input" placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
-            <p className="payment-note">Payment via x402 protocol</p>
+              <input placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
+              <p className="payment-note">Payment via x402 protocol</p>
             </div>
           </div>
         </div>
@@ -576,13 +576,3 @@ export default function App() {
     </div>
   )
 }
-
-      {showChat && (
-        <div className="modal-overlay" onClick={() => setShowChat(false)}>
-          <div className="modal-content">
-            <button onClick={() => setShowChat(false)}>Close</button>
-            <h3>Chat</h3>
-            {chatMessages.map((m, i) => <div key={i}>{m.role}: {m.content}</div>)}
-          </div>
-        </div>
-      )}
