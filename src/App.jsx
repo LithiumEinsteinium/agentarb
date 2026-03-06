@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useWallet } from './hooks/useWallet'
 import { fetchAllAgents, getAgentCount } from './services/8004-api'
 
 function calculateArbitrageScore(agent) {
@@ -31,27 +32,6 @@ function getExplorerUrl(address, chain) {
   return `#`
 }
 
-// x402 payment handler
-async function handleX402Payment(serviceUrl, body) {
-  try {
-    const response = await fetch('https://frames.ag/api/wallets/YOUR_USERNAME/actions/x402/fetch', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer YOUR_API_TOKEN',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        url: serviceUrl,
-        method: 'POST',
-        body: body
-      })
-    });
-    return await response.json();
-  } catch (err) {
-    console.error('x402 payment failed:', err);
-    throw err;
-  }
-}
 
 function getScoreClass(score) {
   if (score >= 70) return 'score-good'
@@ -60,6 +40,7 @@ function getScoreClass(score) {
 }
 
 export default function App() {
+  const { address, connect } = useWallet()
   const [agents, setAgents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -447,7 +428,7 @@ export default function App() {
               </div>
             </div>
             <div className="payment-actions">
-              <button className="pay-button" onClick={() => alert('x402 payment will connect to your wallet')}>
+              <button className="pay-button" onClick={async () => { const tx = await processPayment(); if (tx) alert("Tx sent: " + tx); }}>
                 🔗 Connect Wallet
               </button>
               <p className="payment-note">Powered by x402 protocol</p>
