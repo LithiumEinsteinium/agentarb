@@ -754,3 +754,45 @@ CSEOF
 .price-option .price { font-size: 1.2rem; }
 .price-option.profit { border-top: 1px dashed #444; padding-top: 10px; }
 .price-option.profit .price { color: #4ade80; }
+
+.chat-modal {
+  max-width: 500px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+.chat-message {
+  padding: 8px;
+  margin: 4px 0;
+  border-radius: 8px;
+}
+.chat-message.user {
+  background: #007bff;
+  color: white;
+  text-align: right;
+}
+.chat-message.assistant {
+  background: #e9ecef;
+  color: #333;
+}
+.chat-input {
+  display: flex;
+  gap: 8px;
+}
+.chat-input input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}

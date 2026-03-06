@@ -56,7 +56,7 @@ async function processPayment(service, payingService) {
     });
     const result = await serviceRes.json();
     
-    alert("Success! Response: " + (result?.response?.content || JSON.stringify(result)));
+    setCurrentService({service: result.service, endpoint: payingService.endpoint}); setChatMessages([{role: "assistant", content: result?.response?.content || JSON.stringify(result)}]);
     return result;
   } catch (err) {
     console.error("Payment error:", err);
@@ -131,6 +131,8 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [x402Filter, setX402Filter] = useState('all')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
+  const [chatMessages, setChatMessages] = useState([]);
+  const [currentService, setCurrentService] = useState(null);
   const [payingService, setPayingService] = useState(null)
   const [showServices, setShowServices] = useState(true)
   const [services, setServices] = useState([])
