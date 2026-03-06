@@ -30,7 +30,7 @@ async function processPayment(service, payingService, prompt) {
         params: [{ chainId: "0x2105" }]
       });
     } catch (e) { console.log("Chain switch error:", e); }
-    await new Promise(r => setTimeout(r, 5000)); // Wait for tx confirmation
+    await new Promise(r => setTimeout(r, 8000)); // Wait for tx confirmation
     const txHash = await window.ethereum.request({
       method: "eth_sendTransaction",
       params: [{ ...tx, from, chainId: "0x2105" }]
