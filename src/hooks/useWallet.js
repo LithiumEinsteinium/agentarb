@@ -5,16 +5,19 @@ export function useWallet() {
   const [connecting, setConnecting] = useState(false);
   const [walletType, setWalletType] = useState(null);
 
+  const detectWallet = () => {
+    const w = window.ethereum;
+    if (!w) return null;
+    if (w.isMetaMask) return 'MetaMask';
+    if (w.isCoinbaseWallet) return 'Coinbase Wallet';
+    if (w.isOkexWallet) return 'OKX Wallet';
+    if (w.isBraveWallet) return 'Brave Wallet';
+    if (w.isRabby) return 'Rabby';
+    return 'Wallet';
+  };
+
   useEffect(() => {
-    // Check for different wallets
-    const checkWallets = () => {
-      if (window.ethereum?.isMetaMask) setWalletType('metamask');
-      else if (window.ethereum?.isCoinbaseWallet) setWalletType('coinbase');
-      else if (window.ethereum?.isOkexWallet) setWalletType('okx');
-      else if (window.ethereum) setWalletType('other');
-    };
-    
-    checkWallets();
+    setWalletType(detectWallet());
     
     if (window.ethereum) {
       window.ethereum.request({ method: 'eth_accounts' })
@@ -30,15 +33,25 @@ export function useWallet() {
 
   const connect = async () => {
     if (!window.ethereum) {
-      alert('Please install a wallet! (MetaMask, Coinbase Wallet, or OKX Wallet)');
+      // Try to open wallet download page
+      window.open('https://metamask.io/download/', '_blank');
       return;
     }
     try {
       setConnecting(true);
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      setAddress(accounts[0]);
+      
+      // Try standard requestAccounts
+      const accounts = await window.ethereum.request({ 
+        method: 'eth_requestAccounts' 
+      });
+      
+      if (accounts.length > 0) {
+        setAddress(accounts[0]);
+        setWalletType(detectWallet());
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Connection error:', err);
+      alert('Failed to connect wallet: ' + err.message);
     } finally {
       setConnecting(false);
     }
