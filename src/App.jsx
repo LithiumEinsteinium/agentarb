@@ -219,7 +219,7 @@ export default function App() {
       </div>
 
       
-      {showServices && (
+      {false && (
       <div className="services-section">
         <h2>🛒 Agent Services</h2>
         <p className="services-intro">Buy AI services directly - we proxy via x402</p>
@@ -596,3 +596,45 @@ export default function App() {
       )}
 
 }
+      {/* Service Menu */}
+      <div className="service-menu">
+        <h2>🛒 AI Services</h2>
+        <p>Select a service to start</p>
+        <div className="service-buttons">
+          {services.map(s => (
+            <button key={s.id} className="service-btn" onClick={() => openChat(s)}>
+              <span>{s.name}</span>
+              <span className="price">${s.price}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Chat Modal */}
+      {chatOpen && (
+        <div className="modal-overlay" onClick={() => setChatOpen(false)}>
+          <div className="modal-content">
+            <button className="close-btn" onClick={() => setChatOpen(false)}>X</button>
+            <h3>💬 {currentService?.name}</h3>
+            <div className="chat-messages">
+              {chatMessages.map((m, i) => (
+                <div key={i} className={"chat-msg " + m.role}>
+                  <strong>{m.role === 'user' ? 'You' : 'AI'}:</strong> {m.content}
+                </div>
+              ))}
+            </div>
+            <input 
+              type="text" 
+              placeholder="Enter prompt..."
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter' && e.target.value) {
+                  const input = e.target.value;
+                  e.target.value = '';
+                  setChatMessages([...chatMessages, {role: 'user', content: input}]);
+                  // Call API - simplified
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
