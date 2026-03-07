@@ -125,7 +125,7 @@ function App() {
     <div className="app">
       <header>
         <h1>🛒 AI Services</h1>
-        <button className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? "←" : "☰ Menu"}</button>}
+        <button className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? "←" : "☰ Menu"}</button>
         {wallet ? <span className="wallet-badge">{wallet.slice(0,6)}...{wallet.slice(-4)}</span> : <button className="connect-btn" onClick={connectWallet}>Connect</button>}
       </header>
 
