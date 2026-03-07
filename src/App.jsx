@@ -7,6 +7,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(null);
 
   const services = [
     { id: 'grok-fast', name: '⚡ Grok Fast', price: 0.04 },
@@ -23,8 +24,10 @@ function App() {
     }
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text, idx) => {
     navigator.clipboard.writeText(text);
+    setCopied(idx);
+    setTimeout(() => setCopied(null), 2000);
   };
 
   const sendMessage = async () => {
@@ -71,29 +74,31 @@ function App() {
         {wallet ? (
           <span className="wallet-badge">{wallet.slice(0,6)}...{wallet.slice(-4)}</span>
         ) : (
-          <button className="connect-btn" onClick={connectWallet}>Connect Wallet</button>
+          <button className="connect-btn" onClick={connectWallet}>Connect</button>
         )}
       </header>
 
       <div className="main-layout">
         <aside className="services-sidebar">
           <h3>Services</h3>
-          {services.map(s => (
-            <div 
-              key={s.id} 
-              className={`service-item ${activeService?.id === s.id ? 'active' : ''}`}
-              onClick={() => setActiveService(s)}
-            >
-              <span>{s.name}</span>
-              <span className="price">${s.price}</span>
-            </div>
-          ))}
+          <div className="services-list">
+            {services.map(s => (
+              <div 
+                key={s.id} 
+                className={`service-item ${activeService?.id === s.id ? 'active' : ''}`}
+                onClick={() => setActiveService(s)}
+              >
+                <span>{s.name}</span>
+                <span className="price">${s.price}</span>
+              </div>
+            ))}
+          </div>
         </aside>
 
         <section className="chat-section">
           {!activeService ? (
             <div className="select-service-msg">
-              <h2>Select a service to start chatting</h2>
+              <h2>Select a service to start</h2>
             </div>
           ) : (
             <>
@@ -105,7 +110,9 @@ function App() {
                   <div key={i} className={`message ${m.role}`}>
                     <div className="msg-content">{m.content}</div>
                     {m.role === 'assistant' && (
-                      <button className="copy-btn" onClick={() => copyToClipboard(m.content)}>📋</button>
+                      <button className="copy-btn" onClick={() => copyToClipboard(m.content, i)}>
+                        {copied === i ? '✓ Copied' : '📋 Copy'}
+                      </button>
                     )}
                   </div>
                 ))}
@@ -115,10 +122,9 @@ function App() {
                 <textarea 
                   value={input} 
                   onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
                   placeholder="Enter your prompt..."
                   disabled={!wallet}
-                  rows={3}
+                  rows={Math.max(3, input.split('\n').length)}
                 />
                 <button onClick={sendMessage} disabled={!wallet || loading || !input.trim()}>Send</button>
               </div>
