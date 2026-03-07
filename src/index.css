@@ -14,7 +14,7 @@ header h1 { font-size: 1.1rem; }
 .sidebar-toggle:hover { background: #333; }
 
 /* Overlay sidebar */
-.services-sidebar { position: fixed; top: 50px; left: 0; bottom: 0; width: 280px; background: #111; border-right: 1px solid #333; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 150; display: flex; flex-direction: column; }
+.services-sidebar { position: fixed; top: 50px; left: 0; bottom: 0; width: 280px; background: #111; border-right: 1px solid #333; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 1000; display: flex; flex-direction: column; }
 .services-sidebar.open { transform: translateX(0); }
 
 .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
