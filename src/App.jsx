@@ -8,8 +8,8 @@ function App() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [duration, setDuration] = useState(4);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const services = [
     // IMAGE
@@ -32,17 +32,8 @@ function App() {
   ];
 
   const getPrice = (service) => {
-    if (service.type === 'video') {
-      return service.pricePerSec * duration;
-    }
+    if (service.type === 'video') return service.pricePerSec * duration;
     return service.price;
-  };
-
-  const getCost = (service) => {
-    if (service.type === 'video') {
-      return service.costPerSec * duration;
-    }
-    return service.cost;
   };
 
   const connectWallet = async () => {
@@ -58,19 +49,57 @@ function App() {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const downloadMedia = (url, type) => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = type === 'video' ? 'video.mp4' : 'image.png';
+    a.target = '_blank';
+    a.click();
+  };
+
+  const renderContent = (content) => {
+    // Check for image URLs
+    const imagePatterns = /\.(png|jpg|jpeg|gif|webp|svg)\?.*/i;
+    const videoPatterns = /\.(mp4|webm|mov)\?.*/i;
+    
+    // Try to find URLs in content
+    const urls = content.match(/https:\/\/[^\s"')]+\.(png|jpg|jpeg|gif|webp|svg|mp4|webm|mov)[^\s"')]*/gi);
+    
+    if (urls) {
+      return (
+        <div className="media-preview">
+          {urls.map((url, i) => {
+            const isVideo = url.match(/\.(mp4|webm|mov)/i);
+            return (
+              <div key={i} className="media-item">
+                {isVideo ? (
+                  <video controls src={url} width="100%" />
+                ) : (
+                  <img src={url} alt="Generated" onClick={() => window.open(url, '_blank')} />
+                )}
+                <button className="download-btn" onClick={() => downloadMedia(url, isVideo ? 'video' : 'image')}>
+                  ⬇️ Download
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    return <pre className="text-content">{content}</pre>;
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || !wallet || !activeService) return;
     
     const userMsg = input;
     const price = getPrice(activeService);
-    const cost = getCost(activeService);
     
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setLoading(true);
 
     try {
-      // Build tx
       const { tx } = await (await fetch('https://lies-platform.onrender.com/api/x402/build-tx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,7 +115,6 @@ function App() {
 
       await new Promise(r => setTimeout(r, 5000));
       
-      // Call our backend which calls Frames
       const result = await (await fetch('https://lies-platform.onrender.com/api/services/frames', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -98,7 +126,7 @@ function App() {
       })).json();
 
       const aiContent = result?.response || JSON.stringify(result);
-      setMessages(prev => [...prev, { role: 'assistant', content: aiContent }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: aiContent, type: activeService.type }]);
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + err.message }]);
     }
@@ -183,9 +211,7 @@ function App() {
 
         <section className="chat-section">
           {!activeService ? (
-            <div className="select-service-msg">
-              <h2>Select a service to start</h2>
-            </div>
+            <div className="select-service-msg"><h2>Select a service to start</h2></div>
           ) : (
             <>
               <div className="chat-header">
@@ -200,9 +226,7 @@ function App() {
                   <label>Duration:</label>
                   <div className="duration-options">
                     {[4, 6, 8, 10].map(d => (
-                      <button key={d} className={duration === d ? 'active' : ''} onClick={() => setDuration(d)}>
-                        {d}s
-                      </button>
+                      <button key={d} className={duration === d ? 'active' : ''} onClick={() => setDuration(d)}>{d}s</button>
                     ))}
                   </div>
                 </div>
@@ -211,11 +235,17 @@ function App() {
               <div className="chat-messages">
                 {messages.map((m, i) => (
                   <div key={i} className={`message ${m.role}`}>
-                    <div className="msg-content">{m.content}</div>
-                    {m.role === 'assistant' && (
-                      <button className="copy-btn" onClick={() => copyToClipboard(m.content, i)}>
-                        {copied === i ? '✓ Copied' : '📋 Copy'}
-                      </button>
+                    {(m.type === 'image' || m.type === 'video') && m.role === 'assistant' ? (
+                      renderContent(m.content)
+                    ) : (
+                      <>
+                        <div className="msg-content">{m.content}</div>
+                        {m.role === 'assistant' && (
+                          <button className="copy-btn" onClick={() => copyToClipboard(m.content, i)}>
+                            {copied === i ? '✓ Copied' : '📋 Copy'}
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 ))}
@@ -230,7 +260,7 @@ function App() {
                   rows={Math.max(3, input.split('\n').length)}
                 />
                 <button onClick={sendMessage} disabled={!wallet || loading || !input.trim()}>
-                  Pay ${activeService.type === 'video' ? (activeService.pricePerSec * duration).toFixed(2) : activeService.price}
+                  Pay ${getPrice(activeService)}
                 </button>
               </div>
             </>
