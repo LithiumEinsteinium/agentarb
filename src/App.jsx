@@ -3,7 +3,7 @@ import { useWallet } from './hooks/useWallet'
 import { fetchAllAgents, getAgentCount } from './services/8004-api'
 
 // Process payment and call service
-async function processPayment(service, payingService, prompt) {
+async function processPayment(service, payingService) {
   if (!window.ethereum) {
     alert("Please connect your wallet first!");
     return null;
@@ -30,7 +30,6 @@ async function processPayment(service, payingService, prompt) {
         params: [{ chainId: "0x2105" }]
       });
     } catch (e) { console.log("Chain switch error:", e); }
-    await new Promise(r => setTimeout(r, 8000)); // Wait for tx confirmation
     const txHash = await window.ethereum.request({
       method: "eth_sendTransaction",
       params: [{ ...tx, from, chainId: "0x2105" }]
@@ -42,11 +41,9 @@ async function processPayment(service, payingService, prompt) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ paymentTxHash: txHash })
     });
-    console.log("TX Hash:", txHash);
     const { valid } = await verifyRes.json();
-    console.log("Verification result:", valid);
     
-    if (false) { // Skip // Re-enable
+    if (!valid) {
       alert("Payment verification failed!");
       return null;
     }
@@ -55,7 +52,7 @@ async function processPayment(service, payingService, prompt) {
     const serviceRes = await fetch("https://lies-platform.onrender.com" + payingService.endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: prompt || "Hello" })
+      body: JSON.stringify({ prompt: "Hello" })
     });
     const result = await serviceRes.json();
     
@@ -134,7 +131,6 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [x402Filter, setX402Filter] = useState('all')
   const [showPaymentModal, setShowPaymentModal] = useState(null)
-  const [userPrompt, setUserPrompt] = useState("")
   const [chatOpen, setChatOpen] = useState(false)
   const [chatMessages, setChatMessages] = useState([])
   const [currentService, setCurrentService] = useState(null)
@@ -219,7 +215,7 @@ export default function App() {
       </div>
 
       
-      {false && (
+      {showServices && (
       <div className="services-section">
         <h2>🛒 Agent Services</h2>
         <p className="services-intro">Buy AI services directly - we proxy via x402</p>
@@ -533,10 +529,9 @@ export default function App() {
               </div>
             </div>
             <div className="payment-actions">
-              <button className="pay-button" onClick={async () => { const result = await processPayment(null, payingService, userPrompt); if (result) alert("Success! Response: " + JSON.stringify(result).substring(0, 200)); }}>
+              <button className="pay-button" onClick={async () => { const result = await processPayment(null, payingService); if (result) alert("Success! Response: " + JSON.stringify(result).substring(0, 200)); }}>
                 🔗 Connect Wallet (MetaMask, Coinbase, OKX)
               </button>
-              <input placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
               <p className="payment-note">Powered by x402 protocol</p>
             </div>
           </div>
@@ -568,7 +563,6 @@ export default function App() {
             </div>
             <div className="payment-actions">
               <button className="pay-button" onClick={() => setPayingService({name: 'Basic Chat', price: 0.02, service: 'basic-chat', endpoint: '/api/services/grok-fast'})}>💳 Pay with Wallet</button>
-              <input placeholder="Enter your prompt..." value={userPrompt} onChange={e => setUserPrompt(e.target.value)} />
               <p className="payment-note">Payment via x402 protocol</p>
             </div>
           </div>
@@ -578,63 +572,4 @@ export default function App() {
       </div>
     </div>
   )
-
-      {chatOpen && (
-        <div className="modal-overlay" onClick={() => setChatOpen(false)}>
-          <div className="modal-content" style={{maxWidth: '500px'}}>
-            <button onClick={() => setChatOpen(false)} style={{float: 'right'}}>X</button>
-            <h3>Chat</h3>
-            <div style={{maxHeight: '300px', overflow: 'auto', background: '#f5f5f5', padding: '10px', margin: '10px 0'}}>
-              {chatMessages.map((m, i) => (
-                <div key={i} style={{padding: '8px', margin: '4px 0', background: m.role === 'user' ? '#007bff' : '#fff', color: m.role === 'user' ? '#fff' : '#000'}}>
-                  <strong>{m.role}:</strong> {m.content}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
 }
-      {/* Service Menu */}
-      <div className="service-menu">
-        <h2>🛒 AI Services</h2>
-        <p>Select a service to start</p>
-        <div className="service-buttons">
-          {services.map(s => (
-            <button key={s.id} className="service-btn" onClick={() => openChat(s)}>
-              <span>{s.name}</span>
-              <span className="price">${s.price}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Chat Modal */}
-      {chatOpen && (
-        <div className="modal-overlay" onClick={() => setChatOpen(false)}>
-          <div className="modal-content">
-            <button className="close-btn" onClick={() => setChatOpen(false)}>X</button>
-            <h3>💬 {currentService?.name}</h3>
-            <div className="chat-messages">
-              {chatMessages.map((m, i) => (
-                <div key={i} className={"chat-msg " + m.role}>
-                  <strong>{m.role === 'user' ? 'You' : 'AI'}:</strong> {m.content}
-                </div>
-              ))}
-            </div>
-            <input 
-              type="text" 
-              placeholder="Enter prompt..."
-              onKeyDown={async (e) => {
-                if (e.key === 'Enter' && e.target.value) {
-                  const input = e.target.value;
-                  e.target.value = '';
-                  setChatMessages([...chatMessages, {role: 'user', content: input}]);
-                  // Call API - simplified
-                }
-              }}
-            />
-          </div>
-        </div>
-      )}
