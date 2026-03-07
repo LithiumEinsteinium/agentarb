@@ -13,7 +13,7 @@ function App() {
   const [copied, setCopied] = useState(null);
   const [duration, setDuration] = useState(4);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedCats, setExpandedCats] = useState(['images', 'video']);
+  const [expandedCat, setExpandedCat] = useState('images');
 
   useEffect(() => {
     localStorage.setItem("chat-history", JSON.stringify(messages));
@@ -44,10 +44,6 @@ function App() {
       { id: 'premium-chat', name: 'Premium Chat', price: 0.25 },
     ]},
   ];
-
-  const toggleCat = (catId) => {
-    setExpandedCats(prev => prev.includes(catId) ? prev.filter(c => c !== catId) : [...prev, catId]);
-  };
 
   const getPrice = (service) => {
     const cat = categories.find(c => c.services.some(s => s.id === service.id));
@@ -108,17 +104,15 @@ function App() {
 
     try {
       const { tx } = await (await fetch('https://lies-platform.onrender.com/api/x402/build-tx', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: String(price) })
       })).json();
       try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x2105' }] }); } catch(e) {}
       const txHash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [{ ...tx, from: wallet, chainId: '0x2105' }] });
       await new Promise(r => setTimeout(r, 5000));
-      
       const result = await (await fetch('https://lies-platform.onrender.com/api/services/frames', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ service: activeService.id, prompt: userMsg, duration: activeService.id.includes('sora') || activeService.id.includes('kling') ? duration : null })
+        body: JSON.stringify({ service: activeService.id, prompt: userMsg, duration: activeService.perSec ? duration : null })
       })).json();
       setMessages(prev => [...prev, { role: 'assistant', content: result?.response || JSON.stringify(result), type: activeService.type }]);
     } catch (err) {
@@ -138,17 +132,17 @@ function App() {
         <aside className={`services-sidebar ${sidebarOpen ? '' : 'closed'}`}>
           <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? '←' : '☰'}</button>
           {sidebarOpen && (
-            <div className="categories">
+            <div className="sidebar-content">
               {categories.map(cat => (
-                <div key={cat.id} className="category">
-                  <div className="category-header" onClick={() => toggleCat(cat.id)}>
+                <div key={cat.id} className="nav-section">
+                  <div className={`nav-header ${expandedCat === cat.id ? 'expanded' : ''}`} onClick={() => setExpandedCat(expandedCat === cat.id ? null : cat.id)}>
                     <span>{cat.name}</span>
-                    <span className="expand-icon">{expandedCats.includes(cat.id) ? '▼' : '▶'}</span>
+                    <span className="nav-arrow">{expandedCat === cat.id ? '▼' : '▶'}</span>
                   </div>
-                  {expandedCats.includes(cat.id) && (
-                    <div className="category-services">
+                  {expandedCat === cat.id && (
+                    <div className="nav-services">
                       {cat.services.map(svc => (
-                        <div key={svc.id} className={`service-item ${activeService?.id === svc.id ? 'active' : ''}`} onClick={() => setActiveService({ id: svc.id, name: svc.name, type: cat.id === 'images' ? 'image' : cat.id === 'video' ? 'video' : cat.id === 'chat' ? 'chat' : 'other', price: svc.price, perSec: svc.perSec })}>
+                        <div key={svc.id} className={`nav-item ${activeService?.id === svc.id ? 'active' : ''}`} onClick={() => setActiveService({ id: svc.id, name: svc.name, type: cat.id === 'images' ? 'image' : cat.id === 'video' ? 'video' : cat.id === 'chat' ? 'chat' : 'other', price: svc.price, perSec: svc.perSec })}>
                           <span>{svc.name}</span>
                           <span className="price">${svc.perSec ? svc.price + '/s' : svc.price}</span>
                         </div>
