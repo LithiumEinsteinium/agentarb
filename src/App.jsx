@@ -129,6 +129,7 @@ function App() {
       </header>
 
       <div className="main-layout">
+        <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? "←" : "☰"}</button>
         <aside className={`services-sidebar ${sidebarOpen ? '' : 'closed'}`}>
           <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? '←' : '☰'}</button>
           {sidebarOpen && (
