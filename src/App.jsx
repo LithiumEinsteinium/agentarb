@@ -129,31 +129,36 @@ function App() {
       </header>
 
       <div className="main-layout">
-        <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? "←" : "☰"}</button>
+        <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          {sidebarOpen ? '←' : '☰'}
+        </button>
+        
         <aside className={`services-sidebar ${sidebarOpen ? 'open' : ''}`}>
-          <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? '←' : '☰'}</button>
-          {sidebarOpen && (
-            <div className="sidebar-content">
-              {categories.map(cat => (
-                <div key={cat.id} className="nav-section">
-                  <div className={`nav-header ${expandedCat === cat.id ? 'expanded' : ''}`} onClick={() => setExpandedCat(expandedCat === cat.id ? null : cat.id)}>
-                    <span>{cat.name}</span>
-                    <span className="nav-arrow">{expandedCat === cat.id ? '▼' : '▶'}</span>
-                  </div>
-                  {expandedCat === cat.id && (
-                    <div className="nav-services">
-                      {cat.services.map(svc => (
-                        <div key={svc.id} className={`nav-item ${activeService?.id === svc.id ? 'active' : ''}`} onClick={() => setActiveService({ id: svc.id, name: svc.name, type: cat.id === 'images' ? 'image' : cat.id === 'video' ? 'video' : cat.id === 'chat' ? 'chat' : 'other', price: svc.price, perSec: svc.perSec })}>
-                          <span>{svc.name}</span>
-                          <span className="price">${svc.perSec ? svc.price + '/s' : svc.price}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+          <div className="sidebar-content">
+            <div className="nav-section">
+              <div className="nav-header" onClick={() => setSidebarOpen(false)}>
+                <span>⬅️ Collapse Menu</span>
+              </div>
             </div>
-          )}
+            {categories.map(cat => (
+              <div key={cat.id} className="nav-section">
+                <div className={`nav-header ${expandedCat === cat.id ? 'expanded' : ''}`} onClick={() => setExpandedCat(expandedCat === cat.id ? null : cat.id)}>
+                  <span>{cat.name}</span>
+                  <span className="nav-arrow">{expandedCat === cat.id ? '▼' : '▶'}</span>
+                </div>
+                {expandedCat === cat.id && (
+                  <div className="nav-services">
+                    {cat.services.map(svc => (
+                      <div key={svc.id} className={`nav-item ${activeService?.id === svc.id ? 'active' : ''}`} onClick={() => { setActiveService({ id: svc.id, name: svc.name, type: cat.id === 'images' ? 'image' : cat.id === 'video' ? 'video' : cat.id === 'chat' ? 'chat' : 'other', price: svc.price, perSec: svc.perSec }); setSidebarOpen(false); }}>
+                        <span>{svc.name}</span>
+                        <span className="price">${svc.perSec ? svc.price + '/s' : svc.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </aside>
 
         <section className="chat-section">
