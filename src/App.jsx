@@ -125,13 +125,11 @@ function App() {
     <div className="app">
       <header>
         <h1>🛒 AI Services</h1>
+        {!activeService && <button className="menu-btn" onClick={() => setSidebarOpen(true)}>☰ Menu</button>}
         {wallet ? <span className="wallet-badge">{wallet.slice(0,6)}...{wallet.slice(-4)}</span> : <button className="connect-btn" onClick={connectWallet}>Connect</button>}
       </header>
 
       <div className="main-layout">
-        <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? '←' : '☰'}
-        </button>
         
         <aside className={`services-sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="sidebar-content">
