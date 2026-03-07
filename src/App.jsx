@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import './index.css';
 
 function App() {
   const [wallet, setWallet] = useState(null);
-  const [currentService, setCurrentService] = useState(null);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [activeService, setActiveService] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,34 +21,30 @@ function App() {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       setWallet(accounts[0]);
     } else {
-      alert('Please install MetaMask or another wallet');
+      alert('Please install MetaMask');
     }
   };
 
-  const selectService = (service) => {
-    setCurrentService(service);
-    setMessages([]);
-    setChatOpen(true);
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert('Copied!');
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || !wallet) return;
-    
+    if (!input.trim() || !wallet || !activeService) return;
     const userMsg = input;
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setLoading(true);
 
     try {
-      // Build tx
-      const txRes = await fetch('https://lies-platform.onrender.com/api/x402/build-tx', {
+      // Build & send tx
+      const { tx } = await (await fetch('https://lies-platform.onrender.com/api/x402/build-tx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: String(currentService.price) })
-      });
-      const { tx } = await txRes.json();
+        body: JSON.stringify({ amount: String(activeService.price) })
+      })).json();
 
-      // Switch to Base and send
       try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x2105' }] }); } catch(e) {}
       
       const txHash = await window.ethereum.request({
@@ -57,30 +52,20 @@ function App() {
         params: [{ ...tx, from: wallet, chainId: '0x2105' }]
       });
 
-      // Wait and verify
       await new Promise(r => setTimeout(r, 5000));
       
-      const verifyRes = await fetch('https://lies-platform.onrender.com/api/x402/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentTxHash: txHash })
-      });
-      
-      // Call service
-      const serviceRes = await fetch('https://lies-platform.onrender.com/api/services/' + currentService.id, {
+      // Skip verify for demo
+      const result = await (await fetch('https://lies-platform.onrender.com/api/services/' + activeService.id, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: userMsg })
-      });
-      
-      const result = await serviceRes.json();
+      })).json();
+
       const aiContent = result?.response?.content || result?.response || JSON.stringify(result);
-      
       setMessages(prev => [...prev, { role: 'assistant', content: aiContent }]);
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + err.message }]);
     }
-    
     setLoading(false);
   };
 
@@ -89,51 +74,53 @@ function App() {
       <header>
         <h1>🛒 AI Services</h1>
         {wallet ? (
-          <button className="wallet-btn">{wallet.slice(0,6)}...{wallet.slice(-4)}</button>
+          <span className="wallet-badge">{wallet.slice(0,6)}...{wallet.slice(-4)}</span>
         ) : (
-          <button className="wallet-btn" onClick={connectWallet}>Connect Wallet</button>
+          <button className="connect-btn" onClick={connectWallet}>Connect Wallet</button>
         )}
       </header>
 
       <main>
-        <div className="services-grid">
-          {services.map(s => (
-            <div key={s.id} className="service-card" onClick={() => selectService(s)}>
-              <h3>{s.name}</h3>
-              <p className="price">${s.price}</p>
-            </div>
-          ))}
-        </div>
-      </main>
-
-      {chatOpen && (
-        <div className="chat-overlay" onClick={() => setChatOpen(false)}>
-          <div className="chat-modal" onClick={e => e.stopPropagation()}>
-            <div className="chat-header">
-              <h3>{currentService?.name}</h3>
-              <button onClick={() => setChatOpen(false)}>×</button>
+        {!activeService ? (
+          <div className="services-grid">
+            {services.map(s => (
+              <div key={s.id} className="service-card" onClick={() => setActiveService(s)}>
+                <h3>{s.name}</h3>
+                <span className="price">${s.price}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="chat-container">
+            <div className="chat-header-bar">
+              <button className="back-btn" onClick={() => setActiveService(null)}>← Back</button>
+              <h3>{activeService.name}</h3>
             </div>
             <div className="chat-messages">
               {messages.map((m, i) => (
-                <div key={i} className={`msg ${m.role}`}>
-                  <strong>{m.role === 'user' ? 'You' : 'AI'}:</strong> {m.content}
+                <div key={i} className={`message ${m.role}`}>
+                  <div className="msg-content">{m.content}</div>
+                  {m.role === 'assistant' && (
+                    <button className="copy-btn" onClick={() => copyToClipboard(m.content)}>📋 Copy</button>
+                  )}
                 </div>
               ))}
-              {loading && <div className="msg assistant"><em>Thinking...</em></div>}
+              {loading && <div className="message assistant"><em>Thinking...</em></div>}
             </div>
-            <div className="chat-input">
-              <input 
+            <div className="chat-input-area">
+              <textarea 
                 value={input} 
                 onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
                 placeholder="Enter your prompt..."
                 disabled={!wallet}
+                rows={3}
               />
-              <button onClick={sendMessage} disabled={!wallet || loading}>Send</button>
+              <button onClick={sendMessage} disabled={!wallet || loading || !input.trim()}>Send</button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }
