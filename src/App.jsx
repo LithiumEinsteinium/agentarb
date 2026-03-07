@@ -20,14 +20,11 @@ function App() {
     if (window.ethereum) {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       setWallet(accounts[0]);
-    } else {
-      alert('Please install MetaMask');
     }
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Copied!');
   };
 
   const sendMessage = async () => {
@@ -38,7 +35,6 @@ function App() {
     setLoading(true);
 
     try {
-      // Build & send tx
       const { tx } = await (await fetch('https://lies-platform.onrender.com/api/x402/build-tx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,7 +50,6 @@ function App() {
 
       await new Promise(r => setTimeout(r, 5000));
       
-      // Skip verify for demo
       const result = await (await fetch('https://lies-platform.onrender.com/api/services/' + activeService.id, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,47 +75,57 @@ function App() {
         )}
       </header>
 
-      <main>
-        {!activeService ? (
-          <div className="services-grid">
-            {services.map(s => (
-              <div key={s.id} className="service-card" onClick={() => setActiveService(s)}>
-                <h3>{s.name}</h3>
-                <span className="price">${s.price}</span>
+      <div className="main-layout">
+        <aside className="services-sidebar">
+          <h3>Services</h3>
+          {services.map(s => (
+            <div 
+              key={s.id} 
+              className={`service-item ${activeService?.id === s.id ? 'active' : ''}`}
+              onClick={() => setActiveService(s)}
+            >
+              <span>{s.name}</span>
+              <span className="price">${s.price}</span>
+            </div>
+          ))}
+        </aside>
+
+        <section className="chat-section">
+          {!activeService ? (
+            <div className="select-service-msg">
+              <h2>Select a service to start chatting</h2>
+            </div>
+          ) : (
+            <>
+              <div className="chat-header">
+                <h3>{activeService.name}</h3>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="chat-container">
-            <div className="chat-header-bar">
-              <button className="back-btn" onClick={() => setActiveService(null)}>← Back</button>
-              <h3>{activeService.name}</h3>
-            </div>
-            <div className="chat-messages">
-              {messages.map((m, i) => (
-                <div key={i} className={`message ${m.role}`}>
-                  <div className="msg-content">{m.content}</div>
-                  {m.role === 'assistant' && (
-                    <button className="copy-btn" onClick={() => copyToClipboard(m.content)}>📋 Copy</button>
-                  )}
-                </div>
-              ))}
-              {loading && <div className="message assistant"><em>Thinking...</em></div>}
-            </div>
-            <div className="chat-input-area">
-              <textarea 
-                value={input} 
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                placeholder="Enter your prompt..."
-                disabled={!wallet}
-                rows={3}
-              />
-              <button onClick={sendMessage} disabled={!wallet || loading || !input.trim()}>Send</button>
-            </div>
-          </div>
-        )}
-      </main>
+              <div className="chat-messages">
+                {messages.map((m, i) => (
+                  <div key={i} className={`message ${m.role}`}>
+                    <div className="msg-content">{m.content}</div>
+                    {m.role === 'assistant' && (
+                      <button className="copy-btn" onClick={() => copyToClipboard(m.content)}>📋</button>
+                    )}
+                  </div>
+                ))}
+                {loading && <div className="message assistant"><em>Thinking...</em></div>}
+              </div>
+              <div className="chat-input-area">
+                <textarea 
+                  value={input} 
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
+                  placeholder="Enter your prompt..."
+                  disabled={!wallet}
+                  rows={3}
+                />
+                <button onClick={sendMessage} disabled={!wallet || loading || !input.trim()}>Send</button>
+              </div>
+            </>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
