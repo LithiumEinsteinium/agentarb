@@ -4,19 +4,46 @@ import './index.css';
 function App() {
   const [wallet, setWallet] = useState(null);
   const [activeService, setActiveService] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [duration, setDuration] = useState(4);
 
   const services = [
-    { id: 'grok-fast', name: '⚡ Grok Fast', price: 0.04 },
-    { id: 'basic-chat', name: '💬 Basic Chat', price: 0.02 },
-    { id: 'premium-chat', name: '⭐ Premium Chat', price: 0.25 },
-    { id: 'code-assistant', name: '💻 Code Assistant', price: 0.03 },
-    { id: 'spotlight', name: '🔦 Spotlight', price: 0.75 },
+    // IMAGE
+    { id: 'flux-schnell', name: '🖼️ Flux Schnell', type: 'image', price: 0.03, cost: 0.01 },
+    { id: 'imagen-fast', name: '🖼️ Imagen Fast', type: 'image', price: 0.08, cost: 0.03 },
+    { id: 'flux-pro', name: '🖼️ Flux Pro', type: 'image', price: 0.05, cost: 0.02 },
+    // VIDEO
+    { id: 'sora-2', name: '🎬 Sora 2', type: 'video', pricePerSec: 0.20, costPerSec: 0.12 },
+    { id: 'kling', name: '🎬 Kling Video', type: 'video', pricePerSec: 0.15, costPerSec: 0.09 },
+    // SEARCH
+    { id: 'exa-search', name: '🔍 Exa Search', type: 'search', price: 0.03, cost: 0.01 },
+    // CRYPTO
+    { id: 'coingecko', name: '💰 Crypto Prices', type: 'data', price: 0.02, cost: 0.002 },
+    // TWITTER
+    { id: 'twitter-user', name: '🐦 Twitter User', type: 'twitter', price: 0.02, cost: 0.005 },
+    { id: 'twitter-tweets', name: '🐦 Twitter Tweets', type: 'twitter', price: 0.03, cost: 0.01 },
+    // CHAT
+    { id: 'basic-chat', name: '💬 Basic Chat', type: 'chat', price: 0.02, cost: 0 },
+    { id: 'premium-chat', name: '⭐ Premium Chat', type: 'chat', price: 0.25, cost: 0.15 },
   ];
+
+  const getPrice = (service) => {
+    if (service.type === 'video') {
+      return service.pricePerSec * duration;
+    }
+    return service.price;
+  };
+
+  const getCost = (service) => {
+    if (service.type === 'video') {
+      return service.costPerSec * duration;
+    }
+    return service.cost;
+  };
 
   const connectWallet = async () => {
     if (window.ethereum) {
@@ -33,16 +60,21 @@ function App() {
 
   const sendMessage = async () => {
     if (!input.trim() || !wallet || !activeService) return;
+    
     const userMsg = input;
+    const price = getPrice(activeService);
+    const cost = getCost(activeService);
+    
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setLoading(true);
 
     try {
+      // Build tx
       const { tx } = await (await fetch('https://lies-platform.onrender.com/api/x402/build-tx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: String(activeService.price) })
+        body: JSON.stringify({ amount: String(price) })
       })).json();
 
       try { await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x2105' }] }); } catch(e) {}
@@ -54,13 +86,18 @@ function App() {
 
       await new Promise(r => setTimeout(r, 5000));
       
-      const result = await (await fetch('https://lies-platform.onrender.com/api/services/' + activeService.id, {
+      // Call our backend which calls Frames
+      const result = await (await fetch('https://lies-platform.onrender.com/api/services/frames', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: userMsg })
+        body: JSON.stringify({ 
+          service: activeService.id,
+          prompt: userMsg,
+          duration: activeService.type === 'video' ? duration : null
+        })
       })).json();
 
-      const aiContent = result?.response?.content || result?.response || JSON.stringify(result);
+      const aiContent = result?.response || JSON.stringify(result);
       setMessages(prev => [...prev, { role: 'assistant', content: aiContent }]);
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Error: ' + err.message }]);
@@ -80,23 +117,68 @@ function App() {
       </header>
 
       <div className="main-layout">
-        <aside className={`services-sidebar ${sidebarOpen ? "" : "closed"}`}>
+        <aside className={`services-sidebar ${sidebarOpen ? '' : 'closed'}`}>
           <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
-            {sidebarOpen ? "←" : "☰"}
+            {sidebarOpen ? '←' : '☰'}
           </button>
-          <h3>Services</h3>
-          <div className="services-list">
-            {services.map(s => (
-              <div 
-                key={s.id} 
-                className={`service-item ${activeService?.id === s.id ? 'active' : ''}`}
-                onClick={() => setActiveService(s)}
-              >
-                <span>{s.name}</span>
-                <span className="price">${s.price}</span>
+          {sidebarOpen && (
+            <>
+              <h3>🖼️ Images</h3>
+              <div className="services-list">
+                {services.filter(s => s.type === 'image').map(s => (
+                  <div key={s.id} className={`service-item ${activeService?.id === s.id ? 'active' : ''}`} onClick={() => setActiveService(s)}>
+                    <span>{s.name}</span>
+                    <span className="price">${s.price}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+              <h3>🎬 Video</h3>
+              <div className="services-list">
+                {services.filter(s => s.type === 'video').map(s => (
+                  <div key={s.id} className={`service-item ${activeService?.id === s.id ? 'active' : ''}`} onClick={() => setActiveService(s)}>
+                    <span>{s.name}</span>
+                    <span className="price">${s.pricePerSec}/s</span>
+                  </div>
+                ))}
+              </div>
+              <h3>🔍 Search</h3>
+              <div className="services-list">
+                {services.filter(s => s.type === 'search').map(s => (
+                  <div key={s.id} className={`service-item ${activeService?.id === s.id ? 'active' : ''}`} onClick={() => setActiveService(s)}>
+                    <span>{s.name}</span>
+                    <span className="price">${s.price}</span>
+                  </div>
+                ))}
+              </div>
+              <h3>💰 Crypto</h3>
+              <div className="services-list">
+                {services.filter(s => s.type === 'data').map(s => (
+                  <div key={s.id} className={`service-item ${activeService?.id === s.id ? 'active' : ''}`} onClick={() => setActiveService(s)}>
+                    <span>{s.name}</span>
+                    <span className="price">${s.price}</span>
+                  </div>
+                ))}
+              </div>
+              <h3>🐦 Twitter</h3>
+              <div className="services-list">
+                {services.filter(s => s.type === 'twitter').map(s => (
+                  <div key={s.id} className={`service-item ${activeService?.id === s.id ? 'active' : ''}`} onClick={() => setActiveService(s)}>
+                    <span>{s.name}</span>
+                    <span className="price">${s.price}</span>
+                  </div>
+                ))}
+              </div>
+              <h3>💬 Chat</h3>
+              <div className="services-list">
+                {services.filter(s => s.type === 'chat').map(s => (
+                  <div key={s.id} className={`service-item ${activeService?.id === s.id ? 'active' : ''}`} onClick={() => setActiveService(s)}>
+                    <span>{s.name}</span>
+                    <span className="price">${s.price}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </aside>
 
         <section className="chat-section">
@@ -108,7 +190,24 @@ function App() {
             <>
               <div className="chat-header">
                 <h3>{activeService.name}</h3>
+                <span className="service-price">
+                  {activeService.type === 'video' ? `$${(activeService.pricePerSec * duration).toFixed(2)} (${duration}s)` : `$${activeService.price}`}
+                </span>
               </div>
+              
+              {activeService.type === 'video' && (
+                <div className="duration-selector">
+                  <label>Duration:</label>
+                  <div className="duration-options">
+                    {[4, 6, 8, 10].map(d => (
+                      <button key={d} className={duration === d ? 'active' : ''} onClick={() => setDuration(d)}>
+                        {d}s
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <div className="chat-messages">
                 {messages.map((m, i) => (
                   <div key={i} className={`message ${m.role}`}>
@@ -120,17 +219,19 @@ function App() {
                     )}
                   </div>
                 ))}
-                {loading && <div className="message assistant"><em>Thinking...</em></div>}
+                {loading && <div className="message assistant"><em>Processing...</em></div>}
               </div>
               <div className="chat-input-area">
                 <textarea 
                   value={input} 
                   onChange={e => setInput(e.target.value)}
-                  placeholder="Enter your prompt..."
+                  placeholder={activeService.type === 'video' ? 'Describe the video you want...' : 'Enter your prompt...'}
                   disabled={!wallet}
                   rows={Math.max(3, input.split('\n').length)}
                 />
-                <button onClick={sendMessage} disabled={!wallet || loading || !input.trim()}>Send</button>
+                <button onClick={sendMessage} disabled={!wallet || loading || !input.trim()}>
+                  Pay ${activeService.type === 'video' ? (activeService.pricePerSec * duration).toFixed(2) : activeService.price}
+                </button>
               </div>
             </>
           )}
