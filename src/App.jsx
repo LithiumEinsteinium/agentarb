@@ -4,6 +4,7 @@ import './index.css';
 function App() {
   const [wallet, setWallet] = useState(null);
   const [activeService, setActiveService] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -79,7 +80,10 @@ function App() {
       </header>
 
       <div className="main-layout">
-        <aside className="services-sidebar">
+        <aside className={`services-sidebar ${sidebarOpen ? "" : "closed"}`}>
+          <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            {sidebarOpen ? "←" : "☰"}
+          </button>
           <h3>Services</h3>
           <div className="services-list">
             {services.map(s => (
