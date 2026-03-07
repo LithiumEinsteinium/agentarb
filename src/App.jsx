@@ -1,13 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './index.css';
 
 function App() {
-  const [wallet, setWallet] = useState(null);
+  const [wallet, setWallet] = useState(() => localStorage.getItem("wallet") || null);
   const [activeService, setActiveService] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem("chat-history");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
+
+  // Save chat history when messages change
+  useEffect(() => {
+    localStorage.setItem("chat-history", JSON.stringify(messages));
+  }, [messages]);
   const [duration, setDuration] = useState(4);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -39,7 +47,7 @@ function App() {
   const connectWallet = async () => {
     if (window.ethereum) {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      setWallet(accounts[0]);
+      localStorage.setItem("wallet", accounts[0]); setWallet(accounts[0]);
     }
   };
 
@@ -215,6 +223,7 @@ function App() {
           ) : (
             <>
               <div className="chat-header">
+                <button className="clear-btn" onClick={() => { setMessages([]); localStorage.removeItem("chat-history"); }}>🗑️ Clear</button>
                 <h3>{activeService.name}</h3>
                 <span className="service-price">
                   {activeService.type === 'video' ? `$${(activeService.pricePerSec * duration).toFixed(2)} (${duration}s)` : `$${activeService.price}`}
