@@ -1,5 +1,5 @@
 {
-  "name": "agent-arbitrage-platform",
+  "name": "alacarte-agent-api",
   "version": "1.0.0",
   "description": "Find undervalued AI agents across chains - reputation vs price arbitrage",
   "type": "module",
