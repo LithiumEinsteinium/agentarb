@@ -12,7 +12,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(null);
   const [duration, setDuration] = useState(4);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedCat, setExpandedCat] = useState('images');
 
   useEffect(() => {

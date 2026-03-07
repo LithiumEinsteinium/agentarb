@@ -1,26 +1,28 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
 
-.app { display: flex; flex-direction: column; height: 100vh; }
+.app { position: relative; height: 100vh; overflow: hidden; }
 
-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #111; border-bottom: 1px solid #333; }
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #111; border-bottom: 1px solid #333; }
 header h1 { font-size: 1.1rem; }
 
 .connect-btn { padding: 8px 14px; background: #007bff; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
 .wallet-badge { padding: 6px 12px; background: #28a745; border-radius: 15px; font-size: 0.8rem; }
 
-.main-layout { flex: 1; display: flex; overflow: hidden; }
+/* Fixed toggle button - always visible */
+.sidebar-toggle { position: fixed; top: 60px; left: 10px; z-index: 200; width: 40px; height: 40px; background: #222; border: 1px solid #444; border-radius: 8px; color: #fff; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+.sidebar-toggle:hover { background: #333; }
 
-.services-sidebar { width: 220px; flex-shrink: 0; background: #111; border-right: 1px solid #333; display: flex; flex-direction: column; }
-.services-sidebar.closed { width: 45px; }
-.sidebar-toggle { padding: 10px; background: #1a1a1a; border: none; color: #fff; cursor: pointer; font-size: 1.2rem; }
+/* Overlay sidebar */
+.services-sidebar { position: fixed; top: 50px; left: 0; bottom: 0; width: 280px; background: #111; border-right: 1px solid #333; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 150; display: flex; flex-direction: column; }
+.services-sidebar.open { transform: translateX(0); }
 
-.sidebar-content { flex: 1; overflow-y: auto; padding: 5px; }
+.sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
 
 .nav-section { margin-bottom: 3px; }
 .nav-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px; background: #1a1a1a; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
 .nav-header:hover { background: #252525; }
-.nav-header.expanded { background: #252525; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.nav-header.expanded { background: #252525; }
 .nav-arrow { font-size: 0.7rem; color: #666; }
 
 .nav-services { background: #1a1a1a; border-radius: 0 0 6px 6px; padding: 5px 0; }
@@ -29,7 +31,8 @@ header h1 { font-size: 1.1rem; }
 .nav-item.active { background: #007bff; }
 .nav-item .price { color: #28a745; font-weight: bold; }
 
-.chat-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+/* Chat section - full screen */
+.chat-section { height: 100vh; padding-top: 50px; display: flex; flex-direction: column; }
 .select-service-msg { display: flex; align-items: center; justify-content: center; height: 100%; color: #555; }
 
 .chat-header { display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #111; border-bottom: 1px solid #333; }
@@ -62,6 +65,5 @@ header h1 { font-size: 1.1rem; }
 .chat-input-area button:disabled { background: #444; cursor: not-allowed; }
 
 @media (max-width: 700px) {
-  .main-layout { flex-direction: column; }
-  .services-sidebar { width: 100%; height: auto; max-height: 200px; }
+  .services-sidebar { width: 100%; }
 }
